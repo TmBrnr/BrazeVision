@@ -17,7 +17,7 @@
   "patterns": {
     "forLoopComplex": {
       "regex": "for\\s+(\\w+)\\s+in\\s+(.*?)(?:\\s+limit:\\s*(\\d+))?\\s*$",
-      "friendly": "Loop through {collection} (show {limit} {items})",
+      "friendly": "Loop through {collection} (show {limit} items)",
       "technical": "for {item} in {collection} limit:{limit}",
       "placeholderMap": {
         "item": 1,
@@ -25,15 +25,14 @@
         "limit": 3
       },
       "defaults": {
-        "limit": "all",
-        "items": "items"
+        "limit": "all"
       },
       "priority": 1
     },
     
     "forLoopSimple": {
       "regex": "for\\s+(\\w+)\\s+in\\s+(\\w+)(?:\\s+limit:\\s*(\\d+))?",
-      "friendly": "Loop through {collection} (show {limit} {items})",
+      "friendly": "Loop through {collection} (show {limit} items)",
       "technical": "for {item} in {collection} limit:{limit}",
       "placeholderMap": {
         "item": 1,
@@ -41,16 +40,42 @@
         "limit": 3
       },
       "defaults": {
-        "limit": "all",
-        "items": "items"
+        "limit": "all"
       },
       "priority": 2
     },
     
+    "endfor": {
+      "regex": "endfor",
+      "friendly": "End of loop",
+      "technical": "endfor"
+    },
+    
     "ifStatement": {
       "regex": "if\\s+(.+)",
-      "friendly": "Display when: {condition}",
+      "friendly": "Show when: {condition}",
       "technical": "if {condition}",
+      "placeholderMap": {
+        "condition": 1
+      }
+    },
+    
+    "endif": {
+      "regex": "endif",
+      "friendly": "End condition",
+      "technical": "endif"
+    },
+    
+    "else": {
+      "regex": "else",
+      "friendly": "Otherwise",
+      "technical": "else"
+    },
+    
+    "elseif": {
+      "regex": "elseif\\s+(.+)",
+      "friendly": "Or if: {condition}",
+      "technical": "elseif {condition}",
       "placeholderMap": {
         "condition": 1
       }
@@ -68,7 +93,7 @@
     
     "assignment": {
       "regex": "assign\\s+(\\w+)\\s*=\\s*(.+)",
-      "friendly": "Create variable: {variable} = {value}",
+      "friendly": "Set {variable} to {value}",
       "technical": "assign {variable} = {value}",
       "placeholderMap": {
         "variable": 1,
@@ -83,6 +108,72 @@
       "placeholderMap": {
         "template": 1
       }
+    },
+    
+    "capture": {
+      "regex": "capture\\s+(\\w+)",
+      "friendly": "Start capturing as {variable}",
+      "technical": "capture {variable}",
+      "placeholderMap": {
+        "variable": 1
+      }
+    },
+    
+    "endcapture": {
+      "regex": "endcapture",
+      "friendly": "Stop capturing",
+      "technical": "endcapture"
+    },
+    
+    "unless": {
+      "regex": "unless\\s+(.+)",
+      "friendly": "Hide when: {condition}",
+      "technical": "unless {condition}",
+      "placeholderMap": {
+        "condition": 1
+      }
+    },
+    
+    "endunless": {
+      "regex": "endunless",
+      "friendly": "End hide condition",
+      "technical": "endunless"
+    },
+    
+    "case": {
+      "regex": "case\\s+(.+)",
+      "friendly": "Check value of: {variable}",
+      "technical": "case {variable}",
+      "placeholderMap": {
+        "variable": 1
+      }
+    },
+    
+    "when": {
+      "regex": "when\\s+(.+)",
+      "friendly": "When equals: {value}",
+      "technical": "when {value}",
+      "placeholderMap": {
+        "value": 1
+      }
+    },
+    
+    "endcase": {
+      "regex": "endcase",
+      "friendly": "End value check",
+      "technical": "endcase"
+    },
+    
+    "comment": {
+      "regex": "comment",
+      "friendly": "Hidden note starts",
+      "technical": "comment"
+    },
+    
+    "endcomment": {
+      "regex": "endcomment", 
+      "friendly": "Hidden note ends",
+      "technical": "endcomment"
     }
   },
   
@@ -102,18 +193,53 @@
       "description": "User's last name"
     },
     
+    "full_name": {
+      "friendly": "full name",
+      "description": "User's complete name"
+    },
+    
+    "user_name": {
+      "friendly": "username",
+      "description": "User's display name"
+    },
+    
+    "user_id": {
+      "friendly": "user ID",
+      "description": "Unique user identifier"
+    },
+    
+    "phone_number": {
+      "friendly": "phone number",
+      "description": "User's phone number"
+    },
+    
+    "city": {
+      "friendly": "city",
+      "description": "User's city"
+    },
+    
+    "country": {
+      "friendly": "country",
+      "description": "User's country"
+    },
+    
+    "language": {
+      "friendly": "language",
+      "description": "User's preferred language"
+    },
+    
     "custom_attribute": {
-      "friendly": "custom attribute",
+      "friendly": "custom information",
       "description": "Custom user information"
     },
     
     "product": {
-      "friendly": "product item",
+      "friendly": "product",
       "description": "Product information"
     },
     
     "products": {
-      "friendly": "product list",
+      "friendly": "products",
       "description": "Collection of products"
     },
     
@@ -130,12 +256,42 @@
     "recommended_products": {
       "friendly": "recommended products",
       "description": "Product recommendations"
+    },
+    
+    "cart": {
+      "friendly": "shopping cart",
+      "description": "User's shopping cart"
+    },
+    
+    "order": {
+      "friendly": "order",
+      "description": "User's order information"
+    },
+    
+    "purchase_history": {
+      "friendly": "purchase history",
+      "description": "User's previous purchases"
+    },
+    
+    "preferences": {
+      "friendly": "preferences",
+      "description": "User's preferences and settings"
+    },
+    
+    "subscription": {
+      "friendly": "subscription",
+      "description": "User's subscription information"
+    },
+    
+    "campaign": {
+      "friendly": "campaign",
+      "description": "Current marketing campaign"
     }
   },
   
   "filters": {
     "limit": {
-      "friendly": "limit to {value}",
+      "friendly": "limited to {value} items",
       "description": "Restricts the number of items shown"
     },
     
@@ -152,6 +308,31 @@
     "truncate": {
       "friendly": "truncated to {value} characters",
       "description": "Cuts off text at specified length"
+    },
+    
+    "id": {
+      "friendly": "ID: {value}",
+      "description": "Sets an identifier"
+    },
+    
+    "upcase": {
+      "friendly": "uppercase",
+      "description": "Converts text to uppercase"
+    },
+    
+    "downcase": {
+      "friendly": "lowercase", 
+      "description": "Converts text to lowercase"
+    },
+    
+    "strip": {
+      "friendly": "whitespace removed",
+      "description": "Removes leading and trailing whitespace"
+    },
+    
+    "escape": {
+      "friendly": "HTML escaped",
+      "description": "Escapes HTML characters"
     }
   },
   

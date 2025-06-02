@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Braze Liquid Highlighter",
-  "version": "0.0.1",
-  "description": "Transforms liquid templating syntax into human-readable descriptions with clean visual hierarchy",
+  "version": "1.0.0",
+  "description": "Advanced Liquid syntax highlighter with intelligent pattern recognition, filter handling, and ultra-readable transformations. Perfect for Braze email campaigns and dynamic content.",
   "permissions": [
     "activeTab",
     "storage"
@@ -10,7 +10,15 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js"],
+      "js": [
+        "src/core/ConfigManager.js",
+        "src/core/StorageManager.js",
+        "src/patterns/PatternMatcher.js",
+        "src/ui/HighlightRenderer.js",
+        "src/dom/DOMProcessor.js",
+        "src/core/EventManager.js",
+        "src/core/LiquidHighlighter.js"
+      ],
       "css": ["styles.css"],
       "run_at": "document_end",
       "all_frames": true
@@ -18,7 +26,7 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Liquid Syntax Highlighter"
+    "default_title": "Braze Liquid Highlighter"
   },
   "web_accessible_resources": [
     {

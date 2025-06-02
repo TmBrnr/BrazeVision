@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Liquid Syntax Highlighter</title>
+  <title>Braze Liquid Highlighter</title>
   <style>
     body {
       width: 340px;
@@ -187,6 +187,31 @@
     .dot-amber { background: #d97706; }
     .dot-pink { background: #be185d; }
 
+    .features-section {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+
+    .features-title {
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #15803d;
+    }
+
+    .features-list {
+      font-size: 10px;
+      color: #166534;
+      line-height: 1.4;
+    }
+
+    .features-list li {
+      margin-bottom: 2px;
+    }
+
     .refresh-button {
       width: 100%;
       background: #f3f4f6;
@@ -298,6 +323,19 @@
         color: #e5e7eb;
       }
 
+      .features-section {
+        background: #14532d;
+        border-color: #16a34a;
+      }
+
+      .features-title {
+        color: #bbf7d0;
+      }
+
+      .features-list {
+        color: #86efac;
+      }
+
       .refresh-button {
         background: #374151;
         border-color: #4b5563;
@@ -317,8 +355,8 @@
 </head>
 <body>
   <div class="header">
-    <h1>Liquid Syntax Highlighter</h1>
-    <p>Human-readable liquid templating</p>
+    <h1>Braze Liquid Highlighter</h1>
+    <p>Enterprise-grade liquid templating</p>
   </div>
 
   <div class="section">
@@ -338,8 +376,19 @@
       <div class="mode-option" data-mode="technical">Technical</div>
     </div>
     <div class="mode-example" id="modeExample">
-      Loop through user data (show 3 products)
+      {{${email_address}}} → "Email address"
     </div>
+  </div>
+
+  <div class="features-section">
+    <div class="features-title">✨ Enhanced Features</div>
+    <ul class="features-list">
+      <li>• Ultra-readable variable transformations</li>
+      <li>• Smart filter handling with actual values</li>
+      <li>• Complex nested syntax support</li>
+      <li>• Modular enterprise architecture</li>
+      <li>• Real-time performance optimization</li>
+    </ul>
   </div>
 
   <div class="color-legend">
@@ -382,7 +431,7 @@
   </div>
 
   <div class="footer">
-    <p>v0.0.1 - Braze Liquid Highlighter</p>
+    <p>v1.0.0 - Braze Liquid Highlighter</p>
   </div>
 
   <script src="popup.js"></script>

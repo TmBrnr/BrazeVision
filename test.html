@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Liquid Syntax Color Test</title>
+  <title>Liquid Syntax Test</title>
   <style>
     body {
-      font-family: system-ui, -apple-system, sans-serif;
+      font-family: Arial, sans-serif;
       max-width: 800px;
       margin: 0 auto;
       padding: 20px;
@@ -16,336 +16,74 @@
     .test-section {
       margin: 20px 0;
       padding: 15px;
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      background: #f9fafb;
+      background: #f5f5f5;
+      border-radius: 5px;
     }
     
-    .test-title {
-      font-weight: 600;
-      color: #374151;
-      margin-bottom: 10px;
-    }
-    
-    .test-item {
-      margin: 10px 0;
-      padding: 8px;
-      background: white;
-      border-radius: 4px;
-      font-family: monospace;
-    }
-    
-    .expected-color {
-      display: inline-block;
-      width: 12px;
-      height: 12px;
-      border-radius: 2px;
-      margin-right: 8px;
-      vertical-align: middle;
-    }
-    
-    .amber { background: #d97706; }
-    .red { background: #dc2626; }
-    .green { background: #047857; }
-    .blue { background: #4338ca; }
-    .pink { background: #be185d; }
-    .default { background: #6d28d9; }
-    
-    .debug-info {
-      background: #fef3c7;
-      border: 1px solid #f59e0b;
-      border-radius: 4px;
-      padding: 12px;
-      margin: 20px 0;
-      font-size: 14px;
-    }
-    
-    .mode-selector {
-      margin: 20px 0;
-      text-align: center;
-    }
-    
-    .mode-btn {
-      margin: 0 5px;
-      padding: 8px 16px;
-      border: 1px solid #d1d5db;
-      background: white;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    
-    .mode-btn.active {
-      background: #3b82f6;
-      color: white;
-      border-color: #3b82f6;
+    .test-section h3 {
+      margin-top: 0;
+      color: #333;
     }
   </style>
 </head>
 <body>
-  <h1>Liquid Syntax Highlighter - Color Test Page</h1>
+  <h1>Liquid Syntax Highlighter Test Page</h1>
   
-  <div class="debug-info">
-    <strong>Debug Instructions:</strong><br>
-    1. Open browser console to see pattern recognition logs<br>
-    2. Each pattern should show its expected color (shown as colored dots)<br>
-    3. Test in different modes to verify color variations<br>
-    4. Look for spans with data-liquid-pattern attributes in developer tools
+  <div class="test-section">
+    <h3>Complex Content Blocks (The Problem Case)</h3>
+    <p>This should preserve the variable name and show the filter:</p>
+    <div>{{content_blocks.${code_createSalutation} | id: 'cb1'}}</div>
   </div>
   
-  <div class="mode-selector">
-    <button class="mode-btn active" onclick="setMode('friendly')">Friendly Mode</button>
-    <button class="mode-btn" onclick="setMode('technical')">Technical Mode</button>
-  </div>
-
   <div class="test-section">
-    <div class="test-title">🟡 Loop Patterns (Expected: Amber)</div>
-    <div class="test-item">
-      <span class="expected-color amber"></span>
-      {% for product in products limit:3 %}
-    </div>
-    <div class="test-item">
-      <span class="expected-color amber"></span>
-      {% for item in custom_attribute.cart.Products limit:4 %}
-    </div>
-    <div class="test-item">
-      <span class="expected-color amber"></span>
-      {% for product in {{custom_attribute.${Aktueller Warenkorb}.Products}} limit:3 %}
-    </div>
-    <div class="test-item">
-      <span class="expected-color amber"></span>
-      {% endfor %}
-    </div>
+    <h3>Variable with Filters</h3>
+    <p>Testing various filter combinations:</p>
+    <div>{{user_name | capitalize | default: "Guest"}}</div>
+    <div>{{email_address | truncate: 50 | strip}}</div>
+    <div>{{products | limit: 5}}</div>
   </div>
-
+  
   <div class="test-section">
-    <div class="test-title">🔴 Conditional Patterns (Expected: Red)</div>
-    <div class="test-item">
-      <span class="expected-color red"></span>
-      {% if custom_attribute.Recommendations %}
-    </div>
-    <div class="test-item">
-      <span class="expected-color red"></span>
-      {% unless product.available %}
-    </div>
-    <div class="test-item">
-      <span class="expected-color red"></span>
-      {% case product.type %}
-    </div>
-    <div class="test-item">
-      <span class="expected-color red"></span>
-      {% else %}
-    </div>
-    <div class="test-item">
-      <span class="expected-color red"></span>
-      {% elseif user.premium %}
-    </div>
-    <div class="test-item">
-      <span class="expected-color red"></span>
-      {% endif %}
-    </div>
-    <div class="test-item">
-      <span class="expected-color red"></span>
-      {% endunless %}
-    </div>
-    <div class="test-item">
-      <span class="expected-color red"></span>
-      {% when 'electronics' %}
-    </div>
-    <div class="test-item">
-      <span class="expected-color red"></span>
-      {% endcase %}
-    </div>
+    <h3>Complex Variable Paths</h3>
+    <p>Testing nested object access:</p>
+    <div>{{custom_attribute.${favorite_color}}}</div>
+    <div>{{product.ProductId}}</div>
+    <div>{{content_blocks.header.title}}</div>
   </div>
-
+  
   <div class="test-section">
-    <div class="test-title">🟢 Assignment Patterns (Expected: Green)</div>
-    <div class="test-item">
-      <span class="expected-color green"></span>
-      {% assign recos = custom_attribute.Recommendations %}
-    </div>
-    <div class="test-item">
-      <span class="expected-color green"></span>
-      {% capture product_info %}
-    </div>
-    <div class="test-item">
-      <span class="expected-color green"></span>
-      {% endcapture %}
-    </div>
+    <h3>Control Flow Tags</h3>
+    <p>Testing loop and conditional statements:</p>
+    <div>{% for item in products limit: 3 %}</div>
+    <div>{% if custom_attribute.${user_level} == "premium" %}</div>
+    <div>{% assign recos = {{custom_attribute.${Recommendations}}} %}</div>
+    <div>{% endif %}</div>
+    <div>{% endfor %}</div>
   </div>
-
+  
   <div class="test-section">
-    <div class="test-title">🔵 Data Fetch Patterns (Expected: Blue)</div>
-    <div class="test-item">
-      <span class="expected-color blue"></span>
-      {% catalog_items products "008181049601,000553009512" %}
-    </div>
+    <h3>Catalog Operations</h3>
+    <p>Testing data fetching:</p>
+    <div>{% catalog_items products {{product}} %}</div>
+    <div>{% catalog_items recommendations custom_attribute.${product_ids} %}</div>
   </div>
-
+  
   <div class="test-section">
-    <div class="test-title">🟣 Include Patterns (Expected: Pink)</div>
-    <div class="test-item">
-      <span class="expected-color pink"></span>
-      {% include 'product_template' %}
-    </div>
-    <div class="test-item">
-      <span class="expected-color pink"></span>
-      {% render 'email_footer' %}
-    </div>
+    <h3>Edge Cases</h3>
+    <p>Testing problematic patterns:</p>
+    <div>{{ andn }}</div>
+    <div>{{</div>
+    <div>}}</div>
+    <div>{{incomplete</div>
+    <div>incomplete}}</div>
   </div>
-
+  
   <div class="test-section">
-    <div class="test-title">🟢 Output Variables (Expected: Green)</div>
-    <div class="test-item">
-      <span class="expected-color green"></span>
-      {{email_address}}
-    </div>
-    <div class="test-item">
-      <span class="expected-color green"></span>
-      {{first_name}}
-    </div>
-    <div class="test-item">
-      <span class="expected-color green"></span>
-      {{${last_name}}}
-    </div>
-    <div class="test-item">
-      <span class="expected-color green"></span>
-      {{custom_attribute.cart.Products}}
-    </div>
-    <div class="test-item">
-      <span class="expected-color green"></span>
-      {{content_blocks.${code_getManager} | id: 'cb2'}}
-    </div>
-    <div class="test-item">
-      <span class="expected-color green"></span>
-      {{${user_id}}}
-    </div>
+    <h3>Mode Switch Test</h3>
+    <p>Try switching between Friendly and Technical modes using the extension popup - the transformations should change!</p>
+    <div>{% for product in recommended_products limit: 4 %}</div>
+    <div>{{content_blocks.${header_template} | default: "Default Header"}}</div>
+    <div>{% endfor %}</div>
   </div>
-
-  <div class="test-section">
-    <div class="test-title">🟣 Comment Patterns (Expected: Purple)</div>
-    <div class="test-item">
-      <span class="expected-color default"></span>
-      {% comment %}
-    </div>
-    <div class="test-item">
-      <span class="expected-color default"></span>
-      {% endcomment %}
-    </div>
-  </div>
-
-  <div class="test-section">
-    <div class="test-title">📊 Visual Hierarchy Test</div>
-    <div style="margin-bottom: 15px;">
-      <p><strong>Primary (Large):</strong> {% for product in products limit:3 %}</p>
-      <p><strong>Secondary (Medium):</strong> {% assign recos = custom_attribute.Recommendations %}</p>
-      <p><strong>Tertiary (Small):</strong> {% endif %}</p>
-      <p><strong>Minor (Smallest):</strong> {{email_address}}</p>
-      <p><strong>Utility (Italic):</strong> {% include 'template' %}</p>
-    </div>
-  </div>
-
-  <div class="test-section">
-    <div class="test-title">📏 Vertical Spacing Test (Different Divs)</div>
-    <div class="test-item">
-      <div>{% if customer_data.Recommendations %}</div>
-    </div>
-    <div class="test-item">
-      <div>{% assign recos = customer_data.Recommendations %}</div>
-    </div>
-    <div class="test-item">
-      <div>{% for product in recos limit:3 %}</div>
-    </div>
-    <div class="test-item">
-      <div>{{product.name}}</div>
-    </div>
-    <div class="test-item">
-      <div>{% endfor %}</div>
-    </div>
-    <div class="test-item">
-      <div>{% endif %}</div>
-    </div>
-  </div>
-
-  <div class="test-section">
-    <div class="test-title">⚪ Multi-line Test (Separated Rows)</div>
-    <div class="test-item">
-      <span class="expected-color red"></span>
-      {% if customer_data.Recommendations %}<br>
-    </div>
-    <div class="test-item">
-      <span class="expected-color green"></span>
-      {% assign recos = customer_data.Recommendations %}<br>
-    </div>
-    <div class="test-item">
-      <span class="expected-color amber"></span>
-      {% for product in recos limit:3 %}<br>
-    </div>
-    <div class="test-item">
-      <span class="expected-color green"></span>
-      {{product.name}}<br>
-    </div>
-    <div class="test-item">
-      <span class="expected-color default"></span>
-      {% endfor %}<br>
-    </div>
-    <div class="test-item">
-      <span class="expected-color default"></span>
-      {% endif %}
-    </div>
-  </div>
-
-  <script>
-    function setMode(mode) {
-      // Update button states
-      document.querySelectorAll('.mode-btn').forEach(btn => {
-        btn.classList.remove('active');
-      });
-      event.target.classList.add('active');
-      
-      // Update document data attribute for CSS
-      document.body.dataset.liquidMode = mode;
-      
-      // Send message to extension if available
-      if (window.chrome && chrome.runtime) {
-        chrome.runtime.sendMessage({
-          action: 'changeMode',
-          mode: mode
-        });
-      }
-      
-      console.log(`[Test Page] Changed to ${mode} mode`);
-    }
-    
-    // Initialize with friendly mode
-    document.body.dataset.liquidMode = 'friendly';
-    
-    console.log('[Test Page] Loaded - Extension should highlight the liquid syntax above');
-    console.log('[Test Page] Check console logs for pattern recognition details');
-    
-    // Monitor for highlight changes
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.type === 'childList') {
-          mutation.addedNodes.forEach((node) => {
-            if (node.nodeType === Node.ELEMENT_NODE && 
-              node.classList && 
-              node.classList.contains('liquid-highlight')) {
-              console.log('[Test Page] Detected new highlight:', {
-                text: node.textContent,
-                pattern: node.dataset.liquidPattern,
-                type: node.dataset.liquidType,
-                backgroundColor: window.getComputedStyle(node).backgroundColor
-              });
-            }
-          });
-        }
-      });
-    });
-    
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true
-    });
-  </script>
 </body>
 </html> 
