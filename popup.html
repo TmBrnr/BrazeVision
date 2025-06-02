@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Liquid Syntax Highlighter</title>
+  <style>
+    body {
+      width: 340px;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+      margin: 0;
+      background: #ffffff;
+      color: #1f2937;
+      line-height: 1.5;
+    }
+
+    .header {
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      margin: 0 0 4px 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .header p {
+      margin: 0;
+      font-size: 13px;
+      color: #6b7280;
+      font-weight: 400;
+    }
+
+    .section {
+      background: #f9fafb;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .toggle-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .toggle-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 44px;
+      height: 22px;
+      background: #d1d5db;
+      border-radius: 11px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .toggle-switch.active {
+      background: #16a34a;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 18px;
+      height: 18px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .toggle-switch.active .toggle-slider {
+      transform: translateX(22px);
+    }
+
+    .status-text {
+      font-size: 12px;
+      color: #6b7280;
+      text-align: left;
+    }
+
+    .mode-section {
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .mode-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #0c4a6e;
+    }
+
+    .mode-selector {
+      display: flex;
+      background: #ffffff;
+      border-radius: 6px;
+      padding: 2px;
+      border: 1px solid #e0f2fe;
+      margin-bottom: 12px;
+    }
+
+    .mode-option {
+      flex: 1;
+      padding: 6px 8px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: #0c4a6e;
+    }
+
+    .mode-option.active {
+      background: #16a34a;
+      color: white;
+    }
+
+    .mode-example {
+      font-size: 11px;
+      color: #0369a1;
+      background: #ffffff;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #e0f2fe;
+      font-family: system-ui;
+    }
+
+    .color-legend {
+      background: #fefce8;
+      border: 1px solid #fde047;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+
+    .color-legend-title {
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #a16207;
+    }
+
+    .color-examples {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      font-size: 10px;
+    }
+
+    .color-example {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 6px;
+      border-radius: 3px;
+      background: white;
+      border: 1px solid #e5e7eb;
+    }
+
+    .color-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .dot-green { background: #16a34a; }
+    .dot-purple { background: #9333ea; }
+    .dot-blue { background: #2563eb; }
+    .dot-red { background: #dc2626; }
+    .dot-amber { background: #d97706; }
+    .dot-pink { background: #be185d; }
+
+    .refresh-button {
+      width: 100%;
+      background: #f3f4f6;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      color: #374151;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .refresh-button:hover {
+      background: #e5e7eb;
+      border-color: #9ca3af;
+    }
+
+    .refresh-button:active {
+      transform: translateY(0);
+    }
+
+    .refresh-button.loading {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .refresh-text {
+      font-size: 12px;
+      color: #6b7280;
+      line-height: 1.4;
+    }
+
+    .info-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #374151;
+    }
+
+    .features-list {
+      font-size: 12px;
+      line-height: 1.4;
+      color: #4b5563;
+    }
+
+    .features-list li {
+      margin: 4px 0;
+      padding-left: 4px;
+    }
+
+    .features-list strong {
+      color: #111827;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 11px;
+      color: #9ca3af;
+      margin-top: 16px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: #111827;
+        color: #f9fafb;
+      }
+
+      .header h1 {
+        color: #ffffff;
+      }
+
+      .header p {
+        color: #9ca3af;
+      }
+
+      .section {
+        background: #1f2937;
+        border-color: #374151;
+      }
+
+      .toggle-label {
+        color: #f3f4f6;
+      }
+
+      .status-text {
+        color: #9ca3af;
+      }
+
+      .mode-section {
+        background: #1e293b;
+        border-color: #475569;
+      }
+
+      .mode-title {
+        color: #bae6fd;
+      }
+
+      .mode-selector {
+        background: #374151;
+        border-color: #475569;
+      }
+
+      .mode-option {
+        color: #e2e8f0;
+      }
+
+      .mode-example {
+        background: #374151;
+        border-color: #475569;
+        color: #cbd5e1;
+      }
+
+      .color-legend {
+        background: #451a03;
+        border-color: #d97706;
+      }
+
+      .color-legend-title {
+        color: #fbbf24;
+      }
+
+      .color-example {
+        background: #111827;
+        border-color: #374151;
+        color: #e5e7eb;
+      }
+
+      .refresh-button {
+        background: #374151;
+        border-color: #4b5563;
+        color: #f3f4f6;
+      }
+
+      .refresh-button:hover {
+        background: #4b5563;
+        border-color: #6b7280;
+      }
+
+      .info-title {
+        color: #f3f4f6;
+      }
+
+      .features-list {
+        color: #9ca3af;
+      }
+
+      .features-list strong {
+        color: #f9fafb;
+      }
+
+      .footer {
+        color: #6b7280;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Liquid Syntax Highlighter</h1>
+    <p>Human-readable liquid templating</p>
+  </div>
+
+  <div class="section">
+    <div class="toggle-container">
+      <span class="toggle-label">Highlighting</span>
+      <div class="toggle-switch" id="toggleSwitch">
+        <div class="toggle-slider"></div>
+      </div>
+    </div>
+    <div class="status-text" id="statusText">Loading</div>
+  </div>
+
+  <div class="mode-section">
+    <div class="mode-title">Display Mode</div>
+    <div class="mode-selector">
+      <div class="mode-option active" data-mode="friendly">Friendly</div>
+      <div class="mode-option" data-mode="technical">Technical</div>
+    </div>
+    <div class="mode-example" id="modeExample">
+      Loop through user data (show 3 products)
+    </div>
+  </div>
+
+  <div class="color-legend">
+    <div class="color-legend-title">Smart Color Coding</div>
+    <div class="color-examples">
+      <div class="color-example">
+        <div class="color-dot dot-green"></div>
+        <span>Variables</span>
+      </div>
+      <div class="color-example">
+        <div class="color-dot dot-purple"></div>
+        <span>Logic Tags</span>
+      </div>
+      <div class="color-example">
+        <div class="color-dot dot-amber"></div>
+        <span>Loops</span>
+      </div>
+      <div class="color-example">
+        <div class="color-dot dot-red"></div>
+        <span>Conditions</span>
+      </div>
+      <div class="color-example">
+        <div class="color-dot dot-blue"></div>
+        <span>Data Fetch</span>
+      </div>
+      <div class="color-example">
+        <div class="color-dot dot-pink"></div>
+        <span>Includes</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <button class="refresh-button" id="refreshButton">
+      <span>Refresh</span>
+    </button>
+    <div class="refresh-text">
+      Manual refresh after content changes
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="info-title">Latest Features</div>
+    <ul class="features-list">
+      <li><strong>Visual Hierarchy:</strong> Different sizes for different importance levels</li>
+      <li><strong>Smart Spacing:</strong> Context-aware positioning and spacing</li>
+      <li><strong>Clean Design:</strong> Streamlined interface without distractions</li>
+      <li><strong>Two Modes:</strong> Friendly and Technical display options</li>
+      <li><strong>Smart Colors:</strong> Different colors for different patterns</li>
+      <li><strong>Ending Tags:</strong> Proper colors for endif, endfor, else, etc.</li>
+      <li><strong>Variable Detection:</strong> Enhanced {{${variable}}} recognition</li>
+      <li><strong>International:</strong> Supports German and special characters</li>
+      <li><strong>No Overlap:</strong> Clean spacing between highlights</li>
+      <li><strong>Configurable:</strong> Easy to extend with new patterns</li>
+    </ul>
+  </div>
+
+  <div class="footer">
+    <p>v1.4.0 - Streamlined experience</p>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html> 

@@ -1,0 +1,408 @@
+/* Liquid Syntax Highlighter Styles - Enhanced Color System */
+
+.liquid-highlight {
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+  font-size: inherit;
+  cursor: default;
+  letter-spacing: 0.01em;
+  display: inline-block;
+  line-height: 1.3;
+  margin: 2px 3px;
+  white-space: nowrap;
+  vertical-align: middle;
+  position: relative;
+  z-index: 1;
+}
+
+/* Output tags: content from {{variable}} */
+.liquid-highlight.liquid-output {
+  background-color: rgba(16, 185, 129, 0.12);
+  color: #047857;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+/* Tag syntax: content from {% tag %} */
+.liquid-highlight.liquid-tag {
+  background-color: rgba(139, 92, 246, 0.12);
+  color: #6d28d9;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+/* Friendly mode - balanced colors */
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-output {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #1d4ed8;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  font-weight: 500;
+}
+
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-tag {
+  background-color: rgba(245, 101, 101, 0.1);
+  color: #dc2626;
+  border: 1px solid rgba(245, 101, 101, 0.2);
+  font-weight: 500;
+}
+
+/* Technical mode - monospace and muted colors */
+[data-liquid-mode="technical"] .liquid-highlight {
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+  font-size: 0.95em;
+  font-weight: 600;
+  padding: 2px 4px;
+}
+
+[data-liquid-mode="technical"] .liquid-highlight.liquid-output {
+  background-color: rgba(75, 85, 99, 0.1);
+  color: #374151;
+  border: 1px solid rgba(75, 85, 99, 0.2);
+}
+
+[data-liquid-mode="technical"] .liquid-highlight.liquid-tag {
+  background-color: rgba(107, 114, 128, 0.1);
+  color: #4b5563;
+  border: 1px solid rgba(107, 114, 128, 0.2);
+}
+
+/* Container for highlighted content - prevent overlapping */
+.liquid-highlighted-container {
+  display: inline;
+  line-height: inherit;
+  position: relative;
+}
+
+/* CONTEXT-AWARE SPACING */
+
+/* Multi-line contexts need more vertical breathing room */
+.liquid-highlighted-container[data-liquid-context="multiline"] .liquid-highlight {
+  margin: 4px 4px;
+  display: inline-block;
+  vertical-align: top;
+}
+
+/* Editor contexts need careful positioning */
+.liquid-highlighted-container[data-liquid-context="editor"] .liquid-highlight {
+  margin: 2px 3px;
+  position: relative;
+  z-index: 5;
+}
+
+/* Inline contexts can be more compact */
+.liquid-highlighted-container[data-liquid-context="inline"] .liquid-highlight {
+  margin: 1px 2px;
+}
+
+/* POSITION-BASED STYLING */
+
+/* First highlight in a sequence */
+.liquid-highlight.liquid-first {
+  margin-left: 0;
+}
+
+/* Last highlight in a sequence */
+.liquid-highlight.liquid-last {
+  margin-right: 0;
+}
+
+/* Single highlight (no siblings) */
+.liquid-highlight.liquid-single {
+  margin: 2px 0;
+}
+
+/* IMPORTANCE-BASED STYLING */
+
+/* Primary importance elements */
+.liquid-highlight[data-liquid-importance="primary"] {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+/* Secondary importance elements */
+.liquid-highlight[data-liquid-importance="secondary"] {
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+/* Tertiary importance elements */
+.liquid-highlight[data-liquid-importance="tertiary"] {
+  font-weight: 400;
+  opacity: 0.9;
+  font-size: 0.95em;
+}
+
+/* Minor importance elements */
+.liquid-highlight[data-liquid-importance="minor"] {
+  font-weight: 450;
+  opacity: 0.95;
+  font-size: 0.92em;
+}
+
+/* Utility importance elements */
+.liquid-highlight[data-liquid-importance="utility"] {
+  font-weight: 400;
+  opacity: 0.8;
+  font-size: 0.9em;
+  font-style: italic;
+}
+
+/* VISUAL HIERARCHY SYSTEM */
+
+/* Primary Elements (Control Flow) - Larger, more prominent */
+.liquid-highlight[data-liquid-pattern="forLoopComplex"],
+.liquid-highlight[data-liquid-pattern="forLoopSimple"],
+.liquid-highlight[data-liquid-pattern="ifStatement"],
+.liquid-highlight[data-liquid-pattern="unless"],
+.liquid-highlight[data-liquid-pattern="case"] {
+  font-size: 1.05em;
+  padding: 3px 8px;
+  margin: 3px 4px;
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  border-width: 1.5px;
+}
+
+/* Secondary Elements (Data & Assignment) - Medium prominence */
+.liquid-highlight[data-liquid-pattern="assignment"],
+.liquid-highlight[data-liquid-pattern="capture"],
+.liquid-highlight[data-liquid-pattern="catalogItems"],
+.liquid-highlight.liquid-output[data-liquid-pattern="customAttribute"],
+.liquid-highlight.liquid-output[data-liquid-pattern="contentBlocks"] {
+  font-size: 1.02em;
+  padding: 2.5px 7px;
+  margin: 2.5px 3.5px;
+  font-weight: 550;
+  box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.08);
+}
+
+/* Tertiary Elements (Ending tags) - Subdued */
+.liquid-highlight[data-liquid-pattern="endif"],
+.liquid-highlight[data-liquid-pattern="endfor"],
+.liquid-highlight[data-liquid-pattern="endunless"],
+.liquid-highlight[data-liquid-pattern="endcase"],
+.liquid-highlight[data-liquid-pattern="endcapture"],
+.liquid-highlight[data-liquid-pattern="else"],
+.liquid-highlight[data-liquid-pattern="elseif"],
+.liquid-highlight[data-liquid-pattern="when"] {
+  font-size: 0.92em;
+  padding: 1.5px 5px;
+  margin: 1.5px 2.5px;
+  font-weight: 450;
+  opacity: 0.85;
+  border-style: dashed;
+}
+
+/* Minor Elements (Simple variables) - Smallest */
+.liquid-highlight.liquid-output[data-liquid-pattern="variable"],
+.liquid-highlight.liquid-output[data-liquid-pattern="emailAddress"],
+.liquid-highlight.liquid-output[data-liquid-pattern="firstName"],
+.liquid-highlight.liquid-output[data-liquid-pattern="lastName"] {
+  font-size: 0.96em;
+  padding: 1.5px 4px;
+  margin: 1.5px 2px;
+  font-weight: 500;
+}
+
+/* Utility Elements (Include/Comments) - Distinct styling */
+.liquid-highlight[data-liquid-pattern="include"],
+.liquid-highlight[data-liquid-pattern="render"],
+.liquid-highlight[data-liquid-pattern="comment"],
+.liquid-highlight[data-liquid-pattern="endcomment"] {
+  font-style: italic;
+  border-radius: 6px;
+  padding: 2px 6px;
+  margin: 2px 3px;
+}
+
+/* RESPONSIVE SIZING */
+@media (max-width: 768px) {
+  .liquid-highlight {
+    font-size: 0.9em;
+    padding: 1.5px 4px;
+    margin: 1.5px 2px;
+  }
+  
+  .liquid-highlight[data-liquid-pattern="forLoopComplex"],
+  .liquid-highlight[data-liquid-pattern="forLoopSimple"],
+  .liquid-highlight[data-liquid-pattern="ifStatement"] {
+    font-size: 0.95em;
+  }
+}
+
+/* PATTERN-SPECIFIC COLORS - Higher specificity to override mode defaults */
+/* Loop patterns - Amber */
+.liquid-highlight.liquid-tag[data-liquid-pattern="forLoopComplex"],
+.liquid-highlight.liquid-tag[data-liquid-pattern="forLoopSimple"],
+.liquid-highlight.liquid-tag[data-liquid-pattern="endfor"] {
+  background-color: rgba(245, 158, 11, 0.12) !important;
+  color: #d97706 !important;
+  border-color: rgba(245, 158, 11, 0.2) !important;
+}
+
+/* Conditional patterns - Red */
+.liquid-highlight.liquid-tag[data-liquid-pattern="ifStatement"],
+.liquid-highlight.liquid-tag[data-liquid-pattern="endif"],
+.liquid-highlight.liquid-tag[data-liquid-pattern="else"],
+.liquid-highlight.liquid-tag[data-liquid-pattern="elseif"],
+.liquid-highlight.liquid-tag[data-liquid-pattern="unless"],
+.liquid-highlight.liquid-tag[data-liquid-pattern="endunless"],
+.liquid-highlight.liquid-tag[data-liquid-pattern="case"],
+.liquid-highlight.liquid-tag[data-liquid-pattern="when"],
+.liquid-highlight.liquid-tag[data-liquid-pattern="endcase"] {
+  background-color: rgba(239, 68, 68, 0.12) !important;
+  color: #dc2626 !important;
+  border-color: rgba(239, 68, 68, 0.2) !important;
+}
+
+/* Assignment patterns - Green */
+.liquid-highlight.liquid-tag[data-liquid-pattern="assignment"],
+.liquid-highlight.liquid-tag[data-liquid-pattern="capture"],
+.liquid-highlight.liquid-tag[data-liquid-pattern="endcapture"] {
+  background-color: rgba(16, 185, 129, 0.12) !important;
+  color: #047857 !important;
+  border-color: rgba(16, 185, 129, 0.2) !important;
+}
+
+/* Data fetch patterns - Blue */
+.liquid-highlight.liquid-tag[data-liquid-pattern="catalogItems"],
+.liquid-highlight.liquid-tag[data-liquid-pattern="fetch"],
+.liquid-highlight.liquid-tag[data-liquid-pattern="api"] {
+  background-color: rgba(99, 102, 241, 0.12) !important;
+  color: #4338ca !important;
+  border-color: rgba(99, 102, 241, 0.2) !important;
+}
+
+/* Include patterns - Pink */
+.liquid-highlight.liquid-tag[data-liquid-pattern="include"],
+.liquid-highlight.liquid-tag[data-liquid-pattern="render"] {
+  background-color: rgba(236, 72, 153, 0.12) !important;
+  color: #be185d !important;
+  border-color: rgba(236, 72, 153, 0.2) !important;
+}
+
+/* Comment patterns - Purple (default tag color) */
+.liquid-highlight.liquid-tag[data-liquid-pattern="comment"],
+.liquid-highlight.liquid-tag[data-liquid-pattern="endcomment"] {
+  background-color: rgba(139, 92, 246, 0.12) !important;
+  color: #6d28d9 !important;
+  border-color: rgba(139, 92, 246, 0.2) !important;
+}
+
+/* Variable output patterns - keep original green but make distinct */
+.liquid-highlight.liquid-output[data-liquid-pattern="variable"],
+.liquid-highlight.liquid-output[data-liquid-pattern="customAttribute"],
+.liquid-highlight.liquid-output[data-liquid-pattern="emailAddress"],
+.liquid-highlight.liquid-output[data-liquid-pattern="firstName"],
+.liquid-highlight.liquid-output[data-liquid-pattern="lastName"],
+.liquid-highlight.liquid-output[data-liquid-pattern="userId"],
+.liquid-highlight.liquid-output[data-liquid-pattern="userName"] {
+  background-color: rgba(16, 185, 129, 0.12) !important;
+  color: #047857 !important;
+  border-color: rgba(16, 185, 129, 0.2) !important;
+}
+
+/* Dark mode support with enhanced colors */
+@media (prefers-color-scheme: dark) {
+  .liquid-highlight.liquid-output {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    border-color: rgba(16, 185, 129, 0.3);
+  }
+  
+  .liquid-highlight.liquid-tag {
+    background-color: rgba(139, 92, 246, 0.15);
+    color: #a78bfa;
+    border-color: rgba(139, 92, 246, 0.3);
+  }
+
+  [data-liquid-mode="friendly"] .liquid-highlight.liquid-output {
+    background-color: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+    border-color: rgba(59, 130, 246, 0.4);
+  }
+
+  [data-liquid-mode="friendly"] .liquid-highlight.liquid-tag {
+    background-color: rgba(245, 101, 101, 0.2);
+    color: #f87171;
+    border-color: rgba(245, 101, 101, 0.4);
+  }
+
+  [data-liquid-mode="technical"] .liquid-highlight.liquid-output {
+    background-color: rgba(156, 163, 175, 0.2);
+    color: #d1d5db;
+    border-color: rgba(156, 163, 175, 0.4);
+  }
+
+  [data-liquid-mode="technical"] .liquid-highlight.liquid-tag {
+    background-color: rgba(107, 114, 128, 0.2);
+    color: #9ca3af;
+    border-color: rgba(107, 114, 128, 0.4);
+  }
+
+  /* Pattern-based colors for dark mode - with higher specificity */
+  .liquid-highlight.liquid-tag[data-liquid-pattern="forLoopComplex"],
+  .liquid-highlight.liquid-tag[data-liquid-pattern="forLoopSimple"],
+  .liquid-highlight.liquid-tag[data-liquid-pattern="endfor"] {
+    background-color: rgba(245, 158, 11, 0.2) !important;
+    color: #fbbf24 !important;
+    border-color: rgba(245, 158, 11, 0.4) !important;
+  }
+
+  .liquid-highlight.liquid-tag[data-liquid-pattern="ifStatement"],
+  .liquid-highlight.liquid-tag[data-liquid-pattern="endif"],
+  .liquid-highlight.liquid-tag[data-liquid-pattern="else"],
+  .liquid-highlight.liquid-tag[data-liquid-pattern="elseif"],
+  .liquid-highlight.liquid-tag[data-liquid-pattern="unless"],
+  .liquid-highlight.liquid-tag[data-liquid-pattern="endunless"],
+  .liquid-highlight.liquid-tag[data-liquid-pattern="case"],
+  .liquid-highlight.liquid-tag[data-liquid-pattern="when"],
+  .liquid-highlight.liquid-tag[data-liquid-pattern="endcase"] {
+    background-color: rgba(239, 68, 68, 0.2) !important;
+    color: #f87171 !important;
+    border-color: rgba(239, 68, 68, 0.4) !important;
+  }
+
+  .liquid-highlight.liquid-tag[data-liquid-pattern="assignment"],
+  .liquid-highlight.liquid-tag[data-liquid-pattern="capture"],
+  .liquid-highlight.liquid-tag[data-liquid-pattern="endcapture"] {
+    background-color: rgba(16, 185, 129, 0.2) !important;
+    color: #34d399 !important;
+    border-color: rgba(16, 185, 129, 0.4) !important;
+  }
+
+  .liquid-highlight.liquid-tag[data-liquid-pattern="catalogItems"],
+  .liquid-highlight.liquid-tag[data-liquid-pattern="fetch"],
+  .liquid-highlight.liquid-tag[data-liquid-pattern="api"] {
+    background-color: rgba(99, 102, 241, 0.2) !important;
+    color: #818cf8 !important;
+    border-color: rgba(99, 102, 241, 0.4) !important;
+  }
+
+  .liquid-highlight.liquid-tag[data-liquid-pattern="include"],
+  .liquid-highlight.liquid-tag[data-liquid-pattern="render"] {
+    background-color: rgba(236, 72, 153, 0.2) !important;
+    color: #f472b6 !important;
+    border-color: rgba(236, 72, 153, 0.4) !important;
+  }
+
+  .liquid-highlight.liquid-tag[data-liquid-pattern="comment"],
+  .liquid-highlight.liquid-tag[data-liquid-pattern="endcomment"] {
+    background-color: rgba(139, 92, 246, 0.2) !important;
+    color: #a78bfa !important;
+    border-color: rgba(139, 92, 246, 0.4) !important;
+  }
+
+  .liquid-highlight.liquid-output[data-liquid-pattern="variable"],
+  .liquid-highlight.liquid-output[data-liquid-pattern="customAttribute"],
+  .liquid-highlight.liquid-output[data-liquid-pattern="emailAddress"],
+  .liquid-highlight.liquid-output[data-liquid-pattern="firstName"],
+  .liquid-highlight.liquid-output[data-liquid-pattern="lastName"],
+  .liquid-highlight.liquid-output[data-liquid-pattern="userId"],
+  .liquid-highlight.liquid-output[data-liquid-pattern="userName"] {
+    background-color: rgba(16, 185, 129, 0.2) !important;
+    color: #34d399 !important;
+    border-color: rgba(16, 185, 129, 0.4) !important;
+  }
+} 

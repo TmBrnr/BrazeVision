@@ -1,0 +1,198 @@
+{
+  "displayModes": {
+    "friendly": {
+      "name": "Friendly", 
+      "description": "Readable with some technical context",
+      "showTechnical": true,
+      "showTooltips": true
+    },
+    "technical": {
+      "name": "Technical",
+      "description": "Original syntax with minimal cleaning",
+      "showTechnical": true,
+      "showTooltips": false
+    }
+  },
+  
+  "patterns": {
+    "forLoopComplex": {
+      "regex": "for\\s+(\\w+)\\s+in\\s+(.*?)(?:\\s+limit:\\s*(\\d+))?\\s*$",
+      "friendly": "Loop through {collection} (show {limit} {items})",
+      "technical": "for {item} in {collection} limit:{limit}",
+      "placeholderMap": {
+        "item": 1,
+        "collection": 2,
+        "limit": 3
+      },
+      "defaults": {
+        "limit": "all",
+        "items": "items"
+      },
+      "priority": 1
+    },
+    
+    "forLoopSimple": {
+      "regex": "for\\s+(\\w+)\\s+in\\s+(\\w+)(?:\\s+limit:\\s*(\\d+))?",
+      "friendly": "Loop through {collection} (show {limit} {items})",
+      "technical": "for {item} in {collection} limit:{limit}",
+      "placeholderMap": {
+        "item": 1,
+        "collection": 2,
+        "limit": 3
+      },
+      "defaults": {
+        "limit": "all",
+        "items": "items"
+      },
+      "priority": 2
+    },
+    
+    "ifStatement": {
+      "regex": "if\\s+(.+)",
+      "friendly": "Display when: {condition}",
+      "technical": "if {condition}",
+      "placeholderMap": {
+        "condition": 1
+      }
+    },
+    
+    "catalogItems": {
+      "regex": "catalog_items\\s+(\\w+)\\s+(.+)",
+      "friendly": "Fetch {type}: {source}",
+      "technical": "catalog_items {type} {source}",
+      "placeholderMap": {
+        "type": 1,
+        "source": 2
+      }
+    },
+    
+    "assignment": {
+      "regex": "assign\\s+(\\w+)\\s*=\\s*(.+)",
+      "friendly": "Create variable: {variable} = {value}",
+      "technical": "assign {variable} = {value}",
+      "placeholderMap": {
+        "variable": 1,
+        "value": 2
+      }
+    },
+    
+    "include": {
+      "regex": "include\\s+['\"]([^'\"]+)['\"]",
+      "friendly": "Include template: {template}",
+      "technical": "include '{template}'",
+      "placeholderMap": {
+        "template": 1
+      }
+    }
+  },
+  
+  "variables": {
+    "email_address": {
+      "friendly": "email address",
+      "description": "User's email address"
+    },
+    
+    "first_name": {
+      "friendly": "first name", 
+      "description": "User's first name"
+    },
+    
+    "last_name": {
+      "friendly": "last name",
+      "description": "User's last name"
+    },
+    
+    "custom_attribute": {
+      "friendly": "custom attribute",
+      "description": "Custom user information"
+    },
+    
+    "product": {
+      "friendly": "product item",
+      "description": "Product information"
+    },
+    
+    "products": {
+      "friendly": "product list",
+      "description": "Collection of products"
+    },
+    
+    "catalog_items": {
+      "friendly": "catalog items",
+      "description": "Product catalog data"
+    },
+    
+    "content_blocks": {
+      "friendly": "content blocks",
+      "description": "Content block data"
+    },
+    
+    "recommended_products": {
+      "friendly": "recommended products",
+      "description": "Product recommendations"
+    }
+  },
+  
+  "filters": {
+    "limit": {
+      "friendly": "limit to {value}",
+      "description": "Restricts the number of items shown"
+    },
+    
+    "default": {
+      "friendly": "default: {value}",
+      "description": "Fallback value if empty"
+    },
+    
+    "capitalize": {
+      "friendly": "with first letter capitalized", 
+      "description": "Makes the first letter uppercase"
+    },
+    
+    "truncate": {
+      "friendly": "truncated to {value} characters",
+      "description": "Cuts off text at specified length"
+    }
+  },
+  
+  "styling": {
+    "friendly": {
+      "backgroundColor": "rgba(59, 130, 246, 0.1)", 
+      "color": "#1e40af",
+      "fontWeight": "500",
+      "fontSize": "inherit",
+      "padding": "2px 6px",
+      "borderRadius": "4px"
+    },
+    
+    "technical": {
+      "backgroundColor": "rgba(75, 85, 99, 0.1)",
+      "color": "#374151", 
+      "fontWeight": "600",
+      "fontSize": "0.95em",
+      "padding": "2px 4px",
+      "borderRadius": "3px",
+      "fontFamily": "'SF Mono', Monaco, 'Cascadia Code', monospace"
+    }
+  },
+  
+  "replacements": {
+    "collections": {
+      "custom_attribute": "user data",
+      "content_blocks": "content",
+      "catalog_items": "products"
+    },
+    
+    "objects": {
+      "email_address": "email",
+      "first_name": "first name",
+      "last_name": "last name"
+    }
+  },
+  
+  "variablePatterns": {
+    "dollarBrace": "\\$\\{([^}]+)\\}",
+    "doubleBrace": "\\{\\{([^}]+)\\}\\}",
+    "complexPath": "([a-zA-Z_][a-zA-Z0-9_]*(?:\\.[a-zA-Z0-9_\\${}.\\s\"'-]+)*)"
+  }
+} 
