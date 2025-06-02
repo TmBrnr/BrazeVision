@@ -1,248 +1,186 @@
-# Liquid Syntax Highlighter
+# Braze Liquid Highlighter
 
-A Chrome browser extension that transforms liquid templating syntax into **human-readable descriptions** for non-technical users. Instead of showing confusing code, it displays plain language explanations of what the liquid syntax does.
+A Chrome browser extension that transforms liquid templating syntax into human-readable descriptions with clean visual hierarchy. Designed specifically for Braze email and messaging workflows.
 
-## ✨ Features
+## Overview
 
-### 🎯 Human-Readable Display
-- **Simple Mode**: "Show 4 products from catalog" instead of `{% for product in products limit:4 %}`
-- **Friendly Mode**: "Loop through products (show 4 items)" with readable context
-- **Technical Mode**: Clean original syntax for developers
+The Braze Liquid Highlighter makes liquid syntax more accessible to team members with varying technical backgrounds by converting complex liquid code into readable descriptions while maintaining visual clarity through intelligent color coding and hierarchy.
 
-### 🔧 Fully Configurable
-- **JSON Configuration**: Easy to customize patterns, variables, and display modes
-- **Scalable**: Add new liquid patterns and transformations without code changes
-- **User-Friendly**: Perfect for content creators, marketers, and non-technical users
+## Features
 
-### 🌐 Universal Compatibility
-- Works across **all websites** and **iframe content**
-- **Real-time highlighting** with automatic content detection
-- **Cross-frame synchronization** for consistent experience
+### Core Functionality
+- **Real-time Highlighting**: Automatically detects and transforms liquid syntax as you type
+- **Cross-frame Support**: Works in iframes and embedded editors (including Bee Editor, TinyMCE)
+- **Pattern Recognition**: Intelligent detection of different liquid syntax patterns
+- **Context Awareness**: Adapts spacing and positioning based on content environment
 
-## 🚀 Quick Start
+### Visual System
+- **Smart Color Coding**: Different colors for different pattern types
+  - 🟡 **Amber**: Loop patterns (`{% for %}`, `{% endfor %}`)
+  - 🔴 **Red**: Conditional patterns (`{% if %}`, `{% endif %}`, `{% else %}`)
+  - 🟢 **Green**: Assignment patterns (`{% assign %}`, `{% capture %}`) and variables (`{{email_address}}`)
+  - 🔵 **Blue**: Data fetch patterns (`{% catalog_items %}`)
+  - 🟣 **Pink**: Include patterns (`{% include %}`, `{% render %}`)
+  - 🟣 **Purple**: Comment patterns (`{% comment %}`)
 
-1. **Install** the extension (load unpacked from Chrome's developer mode)
-2. **Visit any page** with liquid syntax like `{{email_address}}` or `{% if condition %}`
-3. **Choose your display mode**:
-   - **Simple**: Plain language (recommended for non-technical users)
-   - **Friendly**: Readable with context
-   - **Technical**: Clean original syntax
-
-## 📖 Display Mode Examples
-
-| Original Syntax | Simple Mode | Friendly Mode | Technical Mode |
-|----------------|-------------|---------------|----------------|
-| `{{${email_address}}}` | "email" | "email address" | "email_address" |
-| `{% for product in products limit:4 %}` | "Show 4 products from catalog" | "Loop through products (show 4 items)" | "for product in products limit:4" |
-| `{{custom_attribute.${cart}.total}}` | "user data cart.total" | "custom attribute cart.total" | "custom_attribute.cart.total" |
-| `{% if first_name %}` | "Show this if first name" | "Display when: first name" | "if first_name" |
-
-## ⚙️ Configuration System
+- **Visual Hierarchy**: Different sizes and styling based on importance
+  - **Primary Elements**: Control flow (larger, more prominent)
+  - **Secondary Elements**: Data operations and assignments (medium)
+  - **Tertiary Elements**: Ending tags (smaller, subdued with dashed borders)
+  - **Minor Elements**: Simple variables (smallest)
+  - **Utility Elements**: Includes and comments (italic styling)
 
 ### Display Modes
-The extension supports three display modes defined in `liquid-config.json`:
+- **Friendly Mode** (Default): Readable descriptions with technical context
+  - Example: `{% for product in products limit:3 %}` → "Loop through product list (show 3 items)"
+- **Technical Mode**: Clean original syntax for developers
+  - Example: `{% for product in products limit:3 %}` → "for product in products limit:3"
 
-```json
-{
-  "displayModes": {
-    "simple": {
-      "name": "Simple",
-      "description": "Plain language descriptions for non-technical users",
-      "showTechnical": false,
-      "showTooltips": true
-    },
-    "friendly": {
-      "name": "Friendly", 
-      "description": "Readable with some technical context",
-      "showTechnical": true,
-      "showTooltips": true
-    },
-    "technical": {
-      "name": "Technical",
-      "description": "Original syntax with minimal cleaning",
-      "showTechnical": true,
-      "showTooltips": false
-    }
-  }
-}
-```
+### Advanced Pattern Support
+- **Complex Nested Syntax**: Handles `{{custom_attribute.${variable}.Products}}`
+- **International Characters**: Supports German umlauts and special characters
+- **Variable Detection**: Enhanced `{{${last_name}}}` recognition
+- **Multi-line Content**: Proper handling of syntax across different divs and containers
 
-### Pattern Transformations
-Define how different liquid patterns should be transformed:
+## Technical Implementation
 
+### Architecture
+- **Manifest V3**: Chrome extension using the latest manifest version
+- **Content Script**: Real-time DOM processing and pattern matching
+- **Configuration System**: JSON-based pattern definitions for easy extensibility
+- **CSS-based Styling**: Comprehensive theming with dark mode support
+
+### Key Files
+- `content.js`: Main highlighting logic and pattern recognition
+- `styles.css`: Visual hierarchy and color system
+- `liquid-config.json`: Pattern definitions and transformations
+- `popup.html/js`: Extension interface and controls
+- `test.html`: Comprehensive test page for development
+
+### Pattern Recognition System
+The extension uses a sophisticated pattern matching system with:
+- **Priority-based Matching**: Complex patterns matched first
+- **Fallback Detection**: Keyword-based detection for unmatched patterns
+- **Context Analysis**: Different handling for multi-line vs inline content
+- **Importance Classification**: 5-tier system for visual hierarchy
+
+## Installation & Usage
+
+### Development Setup
+1. Clone or download the extension files
+2. Open Chrome and navigate to `chrome://extensions/`
+3. Enable "Developer mode"
+4. Click "Load unpacked" and select the extension directory
+
+### Using the Extension
+1. **Automatic Detection**: The extension automatically highlights liquid syntax on all web pages
+2. **Toggle On/Off**: Click the extension icon to enable/disable highlighting
+3. **Switch Modes**: Choose between Friendly and Technical display modes
+4. **Manual Refresh**: Use the refresh button for dynamic content
+
+### Testing
+Open `test.html` in your browser to see examples of all supported patterns and verify the visual hierarchy system.
+
+## Supported Liquid Patterns
+
+### Control Flow
+- `{% for item in collection %}` / `{% endfor %}`
+- `{% if condition %}` / `{% endif %}`
+- `{% unless condition %}` / `{% endunless %}`
+- `{% case variable %}` / `{% when value %}` / `{% endcase %}`
+- `{% else %}` / `{% elseif condition %}`
+
+### Data Operations
+- `{% assign variable = value %}`
+- `{% capture variable %}` / `{% endcapture %}`
+- `{% catalog_items products "ids" %}`
+
+### Output Variables
+- `{{email_address}}`, `{{first_name}}`, `{{last_name}}`
+- `{{custom_attribute.property}}`
+- `{{${dynamic_variable}}}`
+- `{{content_blocks.${variable}}}`
+
+### Templates & Comments
+- `{% include 'template_name' %}`
+- `{% render 'template_name' %}`
+- `{% comment %}` / `{% endcomment %}`
+
+## Configuration
+
+The extension is highly configurable through `liquid-config.json`:
+
+### Adding New Patterns
 ```json
 {
   "patterns": {
-    "forLoop": {
-      "regex": "for\\s+(\\w+)\\s+in\\s+([^\\s]+)(?:\\s+limit:(\\d+))?",
-      "simple": "Show {limit} {items} from {collection}",
-      "friendly": "Loop through {collection} (show {limit} {items})",
-      "technical": "for {item} in {collection} limit:{limit}"
+    "newPattern": {
+      "regex": "pattern_regex",
+      "friendly": "Human readable description",
+      "technical": "Clean technical syntax",
+      "placeholderMap": {
+        "placeholder": 1
+      }
     }
   }
 }
 ```
 
-### Variable Glossary
-Map technical variable names to human-readable descriptions:
-
+### Customizing Variables
 ```json
 {
   "variables": {
-    "email_address": {
-      "simple": "email",
-      "friendly": "email address",
-      "description": "User's email address"
-    },
-    "custom_attribute": {
-      "simple": "user data",
-      "friendly": "custom attribute",
-      "description": "Custom user information"
+    "custom_field": {
+      "friendly": "custom field",
+      "description": "Custom user field"
     }
   }
 }
 ```
 
-### Visual Styling
-Customize appearance for each display mode:
+## Browser Compatibility
 
-```json
-{
-  "styling": {
-    "simple": {
-      "backgroundColor": "rgba(59, 130, 246, 0.08)",
-      "color": "#1e40af",
-      "fontWeight": "500",
-      "padding": "2px 6px",
-      "borderRadius": "4px",
-      "border": "1px solid rgba(59, 130, 246, 0.2)"
-    }
-  }
-}
-```
+- **Chrome**: Primary support (Manifest V3)
+- **Edge**: Compatible (Chromium-based)
+- **Firefox**: Requires manifest adaptation
+- **Safari**: Requires Safari extension conversion
 
-## 🎨 UX Design Principles
+## Version History
 
-### For Non-Technical Users
-- **Plain Language**: No jargon or technical terminology
-- **Clear Intent**: Shows what the code will do, not how it does it
-- **Visual Hierarchy**: Subtle highlighting that doesn't overwhelm
-- **Contextual Help**: Tooltips with original syntax when needed
+### v0.0.1 (Current)
+- Initial release with core highlighting functionality
+- Two display modes (Friendly, Technical)
+- Visual hierarchy system with 5 importance levels
+- Smart color coding for 6 pattern types
+- Context-aware spacing and positioning
+- International character support
+- Complex nested syntax handling
+- Cross-frame compatibility
 
-### Accessibility
-- **Keyboard Navigation**: Full keyboard support in popup
-- **Screen Readers**: Proper ARIA labels and roles
-- **Color Blind Friendly**: Uses patterns and typography, not just color
-- **Dark Mode**: Automatic adaptation to system preferences
+## Development Notes
 
-### Performance
-- **Debounced Updates**: Prevents excessive highlighting during typing
-- **Smart Detection**: Only processes relevant content changes
-- **Memory Efficient**: Cleans up highlights when disabled
-- **Cross-Frame Sync**: Minimal overhead communication between frames
+### Key Design Decisions
+- **No Visual Distractions**: Removed icons and hover effects for clean interface
+- **Two-Mode System**: Simplified from three modes to focus on core use cases
+- **Pattern-Specific Colors**: Each syntax type has distinct visual identity
+- **Context Awareness**: Different spacing rules for different environments
+- **Performance Optimized**: Debounced highlighting and efficient DOM processing
 
-## 🔧 Technical Architecture
+### Future Enhancements
+- User-defined custom patterns
+- Export/import configuration
+- Integration with popular email editors
+- Advanced tooltip system
+- Accessibility improvements
 
-### Files Structure
-```
-├── manifest.json          # Extension configuration
-├── content.js             # Main highlighting logic
-├── liquid-config.json     # Human-readable transformations
-├── popup.html             # User interface
-├── popup.js               # Popup logic and mode switching
-├── styles.css             # Visual styling
-└── README.md              # Documentation
-```
+## Contributing
 
-### Key Components
+This extension is designed to be easily extensible through the JSON configuration system. Most customizations can be made without touching the core JavaScript code.
 
-1. **LiquidHighlighter Class** (`content.js`)
-   - Pattern detection and transformation
-   - Configuration-driven text processing
-   - Cross-frame synchronization
-   - Real-time content monitoring
+## License
 
-2. **Configuration System** (`liquid-config.json`)
-   - Display mode definitions
-   - Pattern transformation rules
-   - Variable glossary
-   - Visual styling options
-
-3. **PopupController Class** (`popup.js`)
-   - Mode switching interface
-   - Real-time preview
-   - Settings persistence
-
-## 🌟 Use Cases
-
-### Content Creators
-- **Email Marketers**: Understand what personalization tags do
-- **Template Designers**: See the intent behind liquid code
-- **Content Writers**: Easily identify dynamic content areas
-
-### Developers & Agencies
-- **Code Reviews**: Quickly understand liquid template logic
-- **Client Presentations**: Show functionality in plain language
-- **Training**: Help non-technical team members understand templates
-
-### Enterprise Teams
-- **Documentation**: Visual aid for template documentation
-- **Quality Assurance**: Verify dynamic content behavior
-- **Stakeholder Reviews**: Communicate template functionality clearly
-
-## 🛠️ Advanced Configuration
-
-### Adding New Patterns
-1. Define regex pattern in `liquid-config.json`
-2. Specify transformations for each display mode
-3. Add variable mappings if needed
-4. Test with the refresh button
-
-### Custom Styling
-1. Modify styling section in config
-2. Use CSS properties for each display mode
-3. Support for dark mode variants
-4. Ensure accessibility compliance
-
-### Extending Variables
-1. Add entries to variables section
-2. Define simple, friendly, and technical versions
-3. Include helpful descriptions
-4. Consider internationalization needs
-
-## 📝 Browser Support
-
-- **Chrome**: Full support (primary target)
-- **Edge**: Compatible with Chromium-based version
-- **Firefox**: Adaptable with manifest v2 changes
-
-## 🔒 Privacy & Security
-
-- **No Data Collection**: Extension works entirely locally
-- **No External Requests**: All processing happens on-device
-- **Secure by Design**: Follows Chrome extension security best practices
-- **Cross-Origin Safe**: Respects browser security boundaries
-
-## 🤝 Contributing
-
-1. **Fork** the repository
-2. **Configure** new patterns in `liquid-config.json`
-3. **Test** with various liquid syntax examples
-4. **Submit** pull request with clear description
-
-### Development Setup
-```bash
-# Load extension in Chrome
-1. Open chrome://extensions/
-2. Enable "Developer mode"
-3. Click "Load unpacked"
-4. Select extension directory
-```
-
-## 📄 License
-
-MIT License - Feel free to use and modify for any purpose.
+[Add appropriate license information]
 
 ---
 
-**Transform confusing liquid syntax into clear, human-readable descriptions. Perfect for teams with mixed technical expertise.** 
+**Note**: This extension is specifically designed for Braze liquid templating syntax and may not cover all standard Liquid features. It focuses on the most commonly used patterns in email marketing and messaging workflows. 

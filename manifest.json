@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Braze Liquid Highlighter",
-  "version": "o.0.1",
+  "version": "0.0.1",
   "description": "Transforms liquid templating syntax into human-readable descriptions with clean visual hierarchy",
   "permissions": [
     "activeTab",
