@@ -112,8 +112,14 @@ class PatternMatcher {
       
       // Data fetch patterns (blue)
       'catalogItems': /\bcatalog_items\b/i,
+      'catalogSelectionItems': /\bcatalog_selection_items\b/i,
+      'connectedContent': /\bconnected_content\b/i,
       'fetch': /\bfetch\s+/i,
       'api': /\bapi\s+/i,
+      
+      // Braze-specific patterns (orange)
+      'abortMessage': /\babort_message\b/i,
+      'promotion': /\bpromotion\b/i,
       
       // Include patterns (pink)
       'include': /\binclude\s+/i,
@@ -138,27 +144,66 @@ class PatternMatcher {
     
     const cleanContent = content.trim();
     
-    // First, handle ${variable} patterns - these should be treated as variables
-    if (/\$\{[^}]+\}/i.test(cleanContent)) {
-      return 'variable';
+    // Enhanced Braze pattern detection
+    const brazePatterns = {
+      // Standard ${variable} patterns
+      'brazeStandardVar': /^\$\{([^}]+)\}$/,
+      
+      // Nested object patterns: object.${property}
+      'brazeNestedObject': /^([a-zA-Z_][a-zA-Z0-9_]*)\.\$\{([^}]+)\}$/,
+      
+      // Complex object paths: object.property
+      'brazeObjectProperty': /^([a-zA-Z_][a-zA-Z0-9_]*\.)+[a-zA-Z_][a-zA-Z0-9_]*$/,
+      
+      // Subscription state patterns
+      'brazeSubscriptionState': /^subscribed_state\.\$\{([^}]+)\}$/,
+      
+      // Device attribute patterns
+      'brazeDeviceAttribute': /^(most_recently_used_device|targeted_device)\.\$\{([^}]+)\}$/,
+      
+      // Campaign/Canvas attribute patterns
+      'brazeCampaignAttribute': /^(campaign|canvas|card)\.\$\{([^}]+)\}$/,
+      
+      // Event properties patterns
+      'brazeEventProperty': /^event_properties\.\$\{([^}]+)\}$/,
+      
+      // SMS/WhatsApp patterns
+      'brazeMessageProperty': /^(sms|whats_app)\.\$\{([^}]+)\}$/,
+      
+      // App information patterns
+      'brazeAppProperty': /^app\.\$\{([^}]+)\}$/,
+      
+      // Custom attribute patterns
+      'brazeCustomAttribute': /^custom_attribute\.\$\{([^}]+)\}$/
+    };
+    
+    // Check for specific Braze patterns first
+    for (const [patternName, regex] of Object.entries(brazePatterns)) {
+      if (regex.test(cleanContent)) {
+        return patternName;
+      }
     }
     
-    // Pattern detection for output variables
-    const outputPatterns = {
+    // Legacy pattern detection for backwards compatibility
+    const legacyPatterns = {
       'customAttribute': /custom_attribute/i,
       'emailAddress': /email_address/i,
       'firstName': /first_name/i,
       'lastName': /last_name/i,
       'userId': /user_id/i,
       'userName': /user_name/i,
-      'product': /\bproduct\b(?!\s*s)/i, // product but not products
+      'product': /\bproduct\b(?!\s*s)/i,
       'products': /\bproducts\b/i,
       'contentBlocks': /content_blocks/i,
       'recommendedProducts': /recommended_products/i,
-      'variable': /^\w+$/ // simple word variable
+      'campaignName': /campaign\.name/i,
+      'canvasName': /canvas\.name/i,
+      'deviceCarrier': /(most_recently_used_device|targeted_device)\.carrier/i,
+      'deviceModel': /(most_recently_used_device|targeted_device)\.model/i,
+      'variable': /^\w+$/
     };
     
-    for (const [pattern, regex] of Object.entries(outputPatterns)) {
+    for (const [pattern, regex] of Object.entries(legacyPatterns)) {
       if (regex.test(cleanContent)) {
         return pattern;
       }
@@ -183,8 +228,12 @@ class PatternMatcher {
     // Clean the content
     let cleanContent = content.replace(/\s+/g, ' ').trim();
     
-    // Try to match against configured patterns
-    for (const [patternName, pattern] of Object.entries(patterns)) {
+    // Sort patterns by priority to match specific patterns first (SAME AS identifyTagPattern)
+    const sortedPatterns = Object.entries(patterns)
+      .sort(([, a], [, b]) => (a.priority || 999) - (b.priority || 999));
+    
+    // Try to match against configured patterns in priority order
+    for (const [patternName, pattern] of sortedPatterns) {
       try {
         const regex = new RegExp(pattern.regex, 'i');
         const match = regex.exec(cleanContent);
@@ -217,11 +266,57 @@ class PatternMatcher {
           value = this.humanizeNestedLiquid(value);
         }
         
+        // Process conditional expressions that might contain operators
+        if (typeof value === 'string' && placeholder === 'condition') {
+          value = this.processConditionalExpression(value);
+        }
+        
         result = result.replace(new RegExp(`\\{${placeholder}\\}`, 'g'), value);
       }
     }
     
     return result;
+  }
+
+  processConditionalExpression(expression) {
+    if (this.displayMode === 'technical') {
+      return expression;
+    }
+
+    const operators = this.configManager.getOperators();
+    let processedExpression = expression.trim();
+
+    // Process operators in order of precedence (longer operators first to avoid conflicts)
+    const operatorKeys = Object.keys(operators).sort((a, b) => b.length - a.length);
+    
+    for (const operator of operatorKeys) {
+      const operatorConfig = operators[operator];
+      const friendlyOperator = operatorConfig.friendly || operator;
+      
+      // Create regex pattern to match the operator
+      let regex;
+      if (/^[a-zA-Z]+$/.test(operator)) {
+        // Text operators like 'and', 'or', 'contains' - use word boundaries
+        regex = new RegExp(`\\b${this.escapeRegex(operator)}\\b`, 'gi');
+      } else {
+        // Symbol operators like '==', '!=', '>=', etc. - be careful with spacing
+        regex = new RegExp(`\\s*${this.escapeRegex(operator)}\\s*`, 'g');
+      }
+      
+      processedExpression = processedExpression.replace(regex, ` ${friendlyOperator} `);
+    }
+
+    // Clean up extra spaces
+    processedExpression = processedExpression.replace(/\s+/g, ' ').trim();
+
+    // Process any nested liquid variables in the expression
+    processedExpression = this.humanizeNestedLiquid(processedExpression);
+
+    return processedExpression;
+  }
+
+  escapeRegex(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
   getFallbackTransformation(content) {
@@ -239,7 +334,16 @@ class PatternMatcher {
         regex: /^if\s+(.+)$/i,
         transform: (match) => {
           const condition = this.humanizeNestedLiquid(match[1]);
-          return `Display when: ${condition}`;
+          const processedCondition = this.processConditionalExpression(condition);
+          return `Display when: ${processedCondition}`;
+        }
+      },
+      {
+        regex: /^unless\s+(.+)$/i,
+        transform: (match) => {
+          const condition = this.humanizeNestedLiquid(match[1]);
+          const processedCondition = this.processConditionalExpression(condition);
+          return `Hide when: ${processedCondition}`;
         }
       },
       {
@@ -271,6 +375,10 @@ class PatternMatcher {
       {
         regex: /^if\s+(.+)$/i,
         transform: (match) => `if ${match[1]}`
+      },
+      {
+        regex: /^unless\s+(.+)$/i,
+        transform: (match) => `unless ${match[1]}`
       },
       {
         regex: /^assign\s+(\w+)\s*=\s*(.+)$/i,
@@ -342,13 +450,18 @@ class PatternMatcher {
     
     let result;
     
-    // Handle complex variable paths
-    if (mainContent.includes('.')) {
-      result = this.transformComplexVariable(mainContent);
+    // Check if this is a quoted string literal - preserve as-is
+    if ((mainContent.startsWith('"') && mainContent.endsWith('"')) || 
+        (mainContent.startsWith("'") && mainContent.endsWith("'"))) {
+      result = this.displayMode === 'technical' ? mainContent : mainContent.slice(1, -1); // Remove quotes in friendly mode
     }
-    // Handle ${variable} syntax
+    // Handle ${variable} syntax first (Braze personalization tags)
     else if (mainContent.includes('${')) {
-      result = this.processDoubleBraceVariables(mainContent);
+      result = this.processBrazeVariablePattern(mainContent);
+    }
+    // Handle complex variable paths
+    else if (mainContent.includes('.')) {
+      result = this.transformComplexVariable(mainContent);
     }
     // Simple variable lookup
     else if (variables[mainContent]) {
@@ -383,27 +496,130 @@ class PatternMatcher {
       return mainVar + (filters.length > 0 ? ' | ' + filters.join(' | ') : '');
     }
     
-    const parts = mainVar.split('.');
-    const basePart = parts[0];
     const variables = this.configManager.getVariables();
     
-    let description = variables[basePart]?.friendly || basePart;
+    // Try exact match first (for complex Braze patterns)
+    if (variables[mainVar]) {
+      return variables[mainVar].friendly || mainVar;
+    }
+    
+    // Handle Braze-specific patterns
+    if (mainVar.includes('${')) {
+      return this.processBrazeVariablePattern(mainVar);
+    }
+    
+    // Handle dot notation
+    if (mainVar.includes('.')) {
+      return this.processDotNotationVariable(mainVar, variables);
+    }
+    
+    // Simple variable fallback
+    return this.createSimpleDescription(mainVar);
+  }
+
+  processBrazeVariablePattern(variable) {
+    const variables = this.configManager.getVariables();
+    const dynamicPatterns = this.configManager.getDynamicPatterns();
+    
+    // Pattern: object.${property}
+    const objectPropertyMatch = variable.match(/^([^.]+)\.\$\{([^}]+)\}$/);
+    if (objectPropertyMatch) {
+      const [, objectName, property] = objectPropertyMatch;
+      
+      // Try full pattern match first in variables
+      const fullKey = `${objectName}.${property}`;
+      if (variables[fullKey]) {
+        return variables[fullKey].friendly;
+      }
+      
+      // Check dynamic patterns
+      if (dynamicPatterns[objectName]) {
+        const pattern = dynamicPatterns[objectName];
+        let friendly = pattern.friendly || pattern.pattern;
+        
+        // Replace placeholder with actual property name
+        friendly = friendly.replace(/\{[^}]+\}/g, this.createSimpleDescription(property));
+        return friendly;
+      }
+      
+      // Build friendly description from parts
+      let objectDescription = variables[objectName]?.friendly || this.createSimpleDescription(objectName);
+      let propertyDescription = this.createSimpleDescription(property);
+      
+      // Special handling for common Braze patterns
+      if (objectName === 'most_recently_used_device') {
+        return `${propertyDescription} (from current device)`;
+      } else if (objectName === 'targeted_device') {
+        return `${propertyDescription} (from target device)`;
+      } else if (objectName === 'campaign') {
+        return `campaign ${propertyDescription}`;
+      } else if (objectName === 'canvas') {
+        return `Canvas ${propertyDescription}`;
+      } else if (objectName === 'event_properties') {
+        return `event: ${propertyDescription}`;
+      } else if (objectName === 'custom_attribute') {
+        return `custom ${propertyDescription}`;
+      } else if (objectName === 'subscribed_state') {
+        return `subscription status for ${propertyDescription}`;
+      } else if (objectName === 'sms') {
+        return `SMS ${propertyDescription}`;
+      } else if (objectName === 'whats_app') {
+        return `WhatsApp ${propertyDescription}`;
+      } else if (objectName === 'card') {
+        return `card ${propertyDescription}`;
+      } else if (objectName === 'app') {
+        return `app ${propertyDescription}`;
+      }
+      
+      return `${objectDescription} → ${propertyDescription}`;
+    }
+    
+    // Pattern: standalone ${property}
+    const standaloneMatch = variable.match(/^\$\{([^}]+)\}$/);
+    if (standaloneMatch) {
+      const property = standaloneMatch[1];
+      
+      // First check if the exact property exists in variables
+      if (variables[property]) {
+        return variables[property].friendly;
+      }
+      
+      // Then try common variable name cleanup
+      const cleanProperty = property.replace(/['"]/g, ''); // Remove quotes
+      if (variables[cleanProperty]) {
+        return variables[cleanProperty].friendly;
+      }
+      
+      return this.createSimpleDescription(property);
+    }
+    
+    return variable;
+  }
+
+  processDotNotationVariable(variable, variables) {
+    const parts = variable.split('.');
+    const basePart = parts[0];
+    
+    // Try exact match for full variable path
+    if (variables[variable]) {
+      return variables[variable].friendly;
+    }
+    
+    let description = variables[basePart]?.friendly || this.createSimpleDescription(basePart);
     
     if (parts.length > 1) {
       for (let i = 1; i < parts.length; i++) {
         const part = parts[i];
         
-        // Handle ${variable} syntax - preserve the variable name
-        if (part.includes('${')) {
-          const varMatch = part.match(/\$\{([^}]+)\}/);
-          if (varMatch) {
-            description += ` → ${varMatch[1]}`;
-          } else {
-            description += ` → ${part}`;
-          }
-        } else {
-          description += ` → ${part}`;
+        // Check if we have a friendly name for this specific part
+        const partKey = parts.slice(0, i + 1).join('.');
+        if (variables[partKey]) {
+          return variables[partKey].friendly;
         }
+        
+        // Build description incrementally
+        const partDescription = this.createSimpleDescription(part);
+        description += ` → ${partDescription}`;
       }
     }
     
@@ -527,6 +743,30 @@ class PatternMatcher {
       return variables[variable].friendly;
     }
     
+    // Handle common variable name mappings first
+    const commonMappings = {
+      'membership_level': 'membership level',
+      'max_display': 'max display',
+      'shopping_cart': 'shopping cart',
+      'total_points': 'total points',
+      'bonus_points': 'bonus points',
+      'email_global': 'email global',
+      'inbound_message_body': 'inbound message body',
+      'variant_name': 'variant name',
+      'geofence_name': 'geofence name',
+      'user_preferences': 'user preferences',
+      'ad_tracking_enabled': 'ad tracking enabled',
+      'foreground_push_enabled': 'foreground push enabled',
+      'inbound_media_urls': 'inbound media urls',
+      'preferred_category': 'preferred category',
+      'api_id': 'API ID',
+      'most_recent_locale': 'most recent locale'
+    };
+    
+    if (commonMappings[variable.toLowerCase()]) {
+      return commonMappings[variable.toLowerCase()];
+    }
+    
     // Enhanced conversion for better readability
     let readable = variable
       // Handle camelCase: firstName -> first Name
@@ -543,7 +783,10 @@ class PatternMatcher {
       .replace(/\bapi\b/g, 'API')
       .replace(/\bemail\b/g, 'email')
       .replace(/\bphone\b/g, 'phone')
-      .replace(/\baddress\b/g, 'address');
+      .replace(/\baddress\b/g, 'address')
+      .replace(/\bsms\b/g, 'SMS')
+      .replace(/\bios\b/g, 'iOS')
+      .replace(/\busb\b/g, 'USB');
     
     // Capitalize first letter
     readable = readable.charAt(0).toUpperCase() + readable.slice(1);

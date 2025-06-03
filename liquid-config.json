@@ -53,7 +53,7 @@
     
     "ifStatement": {
       "regex": "if\\s+(.+)",
-      "friendly": "Show when: {condition}",
+      "friendly": "Display when: {condition}",
       "technical": "if {condition}",
       "placeholderMap": {
         "condition": 1
@@ -83,12 +83,67 @@
     
     "catalogItems": {
       "regex": "catalog_items\\s+(\\w+)\\s+(.+)",
-      "friendly": "Fetch {type}: {source}",
-      "technical": "catalog_items {type} {source}",
+      "friendly": "Get {catalog_name} data: {items}",
+      "technical": "catalog_items {catalog_name} {items}",
       "placeholderMap": {
-        "type": 1,
-        "source": 2
-      }
+        "catalog_name": 1,
+        "items": 2
+      },
+      "priority": 5
+    },
+    
+    "catalogItemsSimple": {
+      "regex": "catalog_items\\s+(\\w+)\\s+(\\w+)$",
+      "friendly": "Get {catalog_name} item: {item_id}",
+      "technical": "catalog_items {catalog_name} {item_id}",
+      "placeholderMap": {
+        "catalog_name": 1,
+        "item_id": 2
+      },
+      "priority": 1
+    },
+    
+    "catalogItemsMultiple": {
+      "regex": "catalog_items\\s+(\\w+)\\s+([\\d\\s]+)$",
+      "friendly": "Get multiple {catalog_name} items ({item_ids})",
+      "technical": "catalog_items {catalog_name} {item_ids}",
+      "placeholderMap": {
+        "catalog_name": 1,
+        "item_ids": 2
+      },
+      "priority": 2
+    },
+    
+    "catalogItemsWithRerender": {
+      "regex": "catalog_items\\s+(\\w+)\\s+(\\w+)\\s+:rerender",
+      "friendly": "Get and re-process {catalog_name} item: {item_id}",
+      "technical": "catalog_items {catalog_name} {item_id} :rerender",
+      "placeholderMap": {
+        "catalog_name": 1,
+        "item_id": 2
+      },
+      "priority": 1
+    },
+    
+    "catalogSelectionItems": {
+      "regex": "catalog_selection_items\\s+(\\w+)\\s+(\\w+)",
+      "friendly": "Get {catalog_name} selection: {selection_name}",
+      "technical": "catalog_selection_items {catalog_name} {selection_name}",
+      "placeholderMap": {
+        "catalog_name": 1,
+        "selection_name": 2
+      },
+      "priority": 1
+    },
+    
+    "catalogBasic": {
+      "regex": "catalog_items\\s+(\\w+)$",
+      "friendly": "Access {catalog_name} catalog",
+      "technical": "catalog_items {catalog_name}",
+      "placeholderMap": {
+        "catalog_name": 1
+      },
+      "priority": 3
     },
     
     "assignment": {
@@ -174,118 +229,570 @@
       "regex": "endcomment", 
       "friendly": "Hidden note ends",
       "technical": "endcomment"
+    },
+    
+    "abortMessage": {
+      "regex": "abort_message\\(\\s*['\"]([^'\"]*)['\"]\\s*\\)",
+      "friendly": "Stop message with reason: {reason}",
+      "technical": "abort_message('{reason}')",
+      "placeholderMap": {
+        "reason": 1
+      },
+      "priority": 1
+    },
+    
+    "abortMessageEmpty": {
+      "regex": "abort_message\\(\\s*\\)",
+      "friendly": "Stop message delivery",
+      "technical": "abort_message()",
+      "priority": 2
+    },
+    
+    "promotionWithQuotes": {
+      "regex": "promotion\\(\\s*['\"]([^'\"]+)['\"]\\s*\\)",
+      "friendly": "Apply promotion code: {code}",
+      "technical": "promotion('{code}')",
+      "placeholderMap": {
+        "code": 1
+      },
+      "priority": 1
+    },
+    
+    "promotionWithoutQuotes": {
+      "regex": "promotion\\(\\s*([^)]+)\\s*\\)",
+      "friendly": "Apply promotion code: {code}",
+      "technical": "promotion({code})",
+      "placeholderMap": {
+        "code": 1
+      },
+      "priority": 2
+    },
+    
+    "connectedContentComplex": {
+      "regex": "connected_content\\s+(https?://[^\\s]+)(?:\\s+:method\\s+(\\w+))?(?:\\s+:headers\\s+\\{[^}]*\\})?(?:\\s+:body\\s+([^:]+?))?(?:\\s+:content_type\\s+(\\w+/\\w+))?(?:\\s+:save\\s+(\\w+))?(?:\\s+:cache_max_age\\s+(\\d+))?(?:\\s+:retry)?(?:\\s+:basic_auth\\s+(\\w+))?(?:\\s+:rerender)?",
+      "friendly": "Fetch data from {url} and save as {variable}",
+      "technical": "connected_content {url} :save {variable}",
+      "placeholderMap": {
+        "url": 1,
+        "method": 2,
+        "body": 3,
+        "content_type": 4,
+        "variable": 5,
+        "cache_age": 6,
+        "auth": 7
+      },
+      "defaults": {
+        "variable": "result",
+        "method": "GET"
+      },
+      "priority": 1
+    },
+    
+    "connectedContentSimple": {
+      "regex": "connected_content\\s+(https?://[^\\s]+)\\s+:save\\s+(\\w+)",
+      "friendly": "Fetch data from {url} and save as {variable}",
+      "technical": "connected_content {url} :save {variable}",
+      "placeholderMap": {
+        "url": 1,
+        "variable": 2
+      },
+      "priority": 2
+    },
+    
+    "connectedContentBasic": {
+      "regex": "connected_content\\s+(https?://[^\\s]+)",
+      "friendly": "Fetch and display data from {url}",
+      "technical": "connected_content {url}",
+      "placeholderMap": {
+        "url": 1
+      },
+      "priority": 3
+    },
+    
+    "connectedContentWithRerender": {
+      "regex": "connected_content\\s+(https?://[^\\s]+)\\s+:rerender",
+      "friendly": "Fetch and re-process data from {url}",
+      "technical": "connected_content {url} :rerender",
+      "placeholderMap": {
+        "url": 1
+      },
+      "priority": 2
+    },
+    
+    "connectedContentWithCache": {
+      "regex": "connected_content\\s+(\\[[^\\]]+\\])\\s+:cache_max_age\\s+(\\d+)",
+      "friendly": "Fetch cached data from {url} (cache {cache_time} seconds)",
+      "technical": "connected_content {url} :cache_max_age {cache_time}",
+      "placeholderMap": {
+        "url": 1,
+        "cache_time": 2
+      },
+      "priority": 2
     }
   },
   
   "variables": {
+    "city": {
+      "friendly": "user's city",
+      "description": "User's current city",
+      "category": "standard"
+    },
+    "country": {
+      "friendly": "user's country",
+      "description": "User's current country",
+      "category": "standard"
+    },
+    "date_of_birth": {
+      "friendly": "date of birth",
+      "description": "User's birth date",
+      "category": "standard"
+    },
     "email_address": {
       "friendly": "email address",
-      "description": "User's email address"
+      "description": "User's email address",
+      "category": "standard"
     },
-    
     "first_name": {
       "friendly": "first name", 
-      "description": "User's first name"
+      "description": "User's first name",
+      "category": "standard"
     },
-    
+    "gender": {
+      "friendly": "gender",
+      "description": "User's gender",
+      "category": "standard"
+    },
+    "language": {
+      "friendly": "preferred language",
+      "description": "User's language preference",
+      "category": "standard"
+    },
     "last_name": {
       "friendly": "last name",
-      "description": "User's last name"
+      "description": "User's last name",
+      "category": "standard"
     },
-    
-    "full_name": {
-      "friendly": "full name",
-      "description": "User's complete name"
+    "last_used_app_date": {
+      "friendly": "last app usage date",
+      "description": "When user last opened the app",
+      "category": "standard"
     },
-    
-    "user_name": {
-      "friendly": "username",
-      "description": "User's display name"
+    "most_recent_app_version": {
+      "friendly": "current app version",
+      "description": "User's most recent app version",
+      "category": "standard"
     },
-    
-    "user_id": {
-      "friendly": "user ID",
-      "description": "Unique user identifier"
+    "most_recent_locale": {
+      "friendly": "current locale",
+      "description": "User's most recent locale setting",
+      "category": "standard"
     },
-    
+    "most_recent_location": {
+      "friendly": "current location",
+      "description": "User's most recent location",
+      "category": "standard"
+    },
     "phone_number": {
       "friendly": "phone number",
-      "description": "User's phone number"
+      "description": "User's phone number",
+      "category": "standard"
     },
-    
-    "city": {
-      "friendly": "city",
-      "description": "User's city"
+    "time_zone": {
+      "friendly": "time zone",
+      "description": "User's time zone",
+      "category": "standard"
     },
-    
-    "country": {
-      "friendly": "country",
-      "description": "User's country"
+    "user_id": {
+      "friendly": "user ID",
+      "description": "Unique user identifier",
+      "category": "standard"
     },
-    
-    "language": {
-      "friendly": "language",
-      "description": "User's preferred language"
+    "braze_id": {
+      "friendly": "Braze ID",
+      "description": "Internal Braze user identifier",
+      "category": "standard"
     },
-    
+    "random_bucket_number": {
+      "friendly": "random bucket number",
+      "description": "Random number for A/B testing",
+      "category": "standard"
+    },
+    "age": {
+      "friendly": "age",
+      "description": "User's age",
+      "category": "standard"
+    },
+    "subscribed_state.email_global": {
+      "friendly": "global email subscription status",
+      "description": "User's global email subscription state",
+      "category": "subscription"
+    },
+    "most_recently_used_device.carrier": {
+      "friendly": "mobile carrier",
+      "description": "User's mobile service provider",
+      "category": "device"
+    },
+    "most_recently_used_device.id": {
+      "friendly": "device ID",
+      "description": "Unique device identifier",
+      "category": "device"
+    },
+    "most_recently_used_device.idfa": {
+      "friendly": "iOS advertising ID",
+      "description": "iOS Identifier for Advertising",
+      "category": "device"
+    },
+    "most_recently_used_device.model": {
+      "friendly": "device model",
+      "description": "Device model name (e.g., iPhone 14)",
+      "category": "device"
+    },
+    "most_recently_used_device.os": {
+      "friendly": "operating system",
+      "description": "Device operating system and version",
+      "category": "device"
+    },
+    "most_recently_used_device.platform": {
+      "friendly": "device platform",
+      "description": "Device platform (iOS, Android, etc.)",
+      "category": "device"
+    },
+    "most_recently_used_device.google_ad_id": {
+      "friendly": "Google advertising ID",
+      "description": "Google Play Advertising Identifier",
+      "category": "device"
+    },
+    "most_recently_used_device.roku_ad_id": {
+      "friendly": "Roku advertising ID",
+      "description": "Roku Advertising Identifier",
+      "category": "device"
+    },
+    "most_recently_used_device.foreground_push_enabled": {
+      "friendly": "push notification status",
+      "description": "Whether foreground push is enabled",
+      "category": "device"
+    },
+    "most_recently_used_device.browser": {
+      "friendly": "browser type",
+      "description": "User's most recent browser",
+      "category": "device"
+    },
+    "most_recently_used_device.ad_tracking_enabled": {
+      "friendly": "ad tracking status",
+      "description": "Whether ad tracking is enabled",
+      "category": "device"
+    },
+    "targeted_device.id": {
+      "friendly": "target device ID",
+      "description": "ID of device receiving this message",
+      "category": "targeted_device"
+    },
+    "targeted_device.carrier": {
+      "friendly": "target device carrier",
+      "description": "Carrier of device receiving this message",
+      "category": "targeted_device"
+    },
+    "targeted_device.idfa": {
+      "friendly": "target device iOS ad ID",
+      "description": "iOS ad ID of target device",
+      "category": "targeted_device"
+    },
+    "targeted_device.google_ad_id": {
+      "friendly": "target device Google ad ID",
+      "description": "Google ad ID of target device",
+      "category": "targeted_device"
+    },
+    "targeted_device.roku_ad_id": {
+      "friendly": "target device Roku ad ID",
+      "description": "Roku ad ID of target device",
+      "category": "targeted_device"
+    },
+    "targeted_device.model": {
+      "friendly": "target device model",
+      "description": "Model of device receiving this message",
+      "category": "targeted_device"
+    },
+    "targeted_device.os": {
+      "friendly": "target device OS",
+      "description": "OS of device receiving this message",
+      "category": "targeted_device"
+    },
+    "targeted_device.platform": {
+      "friendly": "target device platform",
+      "description": "Platform of device receiving this message",
+      "category": "targeted_device"
+    },
+    "targeted_device.foreground_push_enabled": {
+      "friendly": "target device push status",
+      "description": "Push status of target device",
+      "category": "targeted_device"
+    },
+    "set_user_to_unsubscribed_url": {
+      "friendly": "unsubscribe link",
+      "description": "Link to unsubscribe from emails",
+      "category": "email"
+    },
+    "set_user_to_subscribed_url": {
+      "friendly": "resubscribe link",
+      "description": "Link to resubscribe to emails",
+      "category": "email"
+    },
+    "set_user_to_opted_in_url": {
+      "friendly": "opt-in link",
+      "description": "Link to opt into email marketing",
+      "category": "email"
+    },
+    "unsubscribe_url": {
+      "friendly": "unsubscribe link (legacy)",
+      "description": "Legacy unsubscribe link",
+      "category": "email"
+    },
+    "sms.inbound_message_body": {
+      "friendly": "received SMS text",
+      "description": "Text content of received SMS",
+      "category": "sms"
+    },
+    "sms.inbound_media_urls": {
+      "friendly": "received SMS media",
+      "description": "Media URLs from received SMS",
+      "category": "sms"
+    },
+    "whats_app.inbound_message_body": {
+      "friendly": "received WhatsApp text",
+      "description": "Text content of received WhatsApp message",
+      "category": "whatsapp"
+    },
+    "whats_app.inbound_media_urls": {
+      "friendly": "received WhatsApp media",
+      "description": "Media URLs from received WhatsApp message",
+      "category": "whatsapp"
+    },
+    "campaign.api_id": {
+      "friendly": "campaign API ID",
+      "description": "Unique API identifier for this campaign",
+      "category": "campaign"
+    },
+    "campaign.dispatch_id": {
+      "friendly": "campaign dispatch ID",
+      "description": "Unique identifier for this message send",
+      "category": "campaign"
+    },
+    "campaign.name": {
+      "friendly": "campaign name",
+      "description": "Name of the current campaign",
+      "category": "campaign"
+    },
+    "campaign.message_name": {
+      "friendly": "message name",
+      "description": "Name of this specific message",
+      "category": "campaign"
+    },
+    "campaign.message_api_id": {
+      "friendly": "message API ID",
+      "description": "API identifier for this message",
+      "category": "campaign"
+    },
+    "canvas.name": {
+      "friendly": "Canvas name",
+      "description": "Name of the Canvas journey",
+      "category": "canvas"
+    },
+    "canvas.api_id": {
+      "friendly": "Canvas API ID",
+      "description": "Unique API identifier for this Canvas",
+      "category": "canvas"
+    },
+    "canvas.variant_name": {
+      "friendly": "Canvas variant name",
+      "description": "Name of the Canvas variant/path",
+      "category": "canvas"
+    },
+    "canvas.variant_api_id": {
+      "friendly": "Canvas variant API ID",
+      "description": "API identifier for this Canvas variant",
+      "category": "canvas"
+    },
+    "card.api_id": {
+      "friendly": "card API ID",
+      "description": "Unique API identifier for this content card",
+      "category": "card"
+    },
+    "card.name": {
+      "friendly": "card name",
+      "description": "Name of this content card",
+      "category": "card"
+    },
+    "event_properties.geofence_name": {
+      "friendly": "geofence location name",
+      "description": "Name of the triggered geofence",
+      "category": "geofence"
+    },
+    "event_properties.geofence_set_name": {
+      "friendly": "geofence group name",
+      "description": "Name of the geofence group/set",
+      "category": "geofence"
+    },
+    "app.api_id": {
+      "friendly": "app API ID",
+      "description": "API identifier of the requesting app",
+      "category": "app"
+    },
+    "app.name": {
+      "friendly": "app name",
+      "description": "Name of the requesting app",
+      "category": "app"
+    },
     "custom_attribute": {
       "friendly": "custom information",
-      "description": "Custom user information"
+      "description": "Custom user information",
+      "category": "custom"
     },
-    
+    "event_properties": {
+      "friendly": "event data",
+      "description": "Custom event properties",
+      "category": "event"
+    },
+    "api_trigger_properties": {
+      "friendly": "API trigger data",
+      "description": "Properties from API-triggered campaigns",
+      "category": "api"
+    },
+    "context": {
+      "friendly": "Canvas context data",
+      "description": "Canvas step context variables",
+      "category": "canvas"
+    },
+    "full_name": {
+      "friendly": "full name",
+      "description": "User's complete name",
+      "category": "standard"
+    },
+    "user_name": {
+      "friendly": "username",
+      "description": "User's display name",
+      "category": "standard"
+    },
     "product": {
       "friendly": "product",
-      "description": "Product information"
+      "description": "Product information",
+      "category": "commerce"
     },
-    
     "products": {
       "friendly": "products",
-      "description": "Collection of products"
+      "description": "Collection of products",
+      "category": "commerce"
     },
-    
     "catalog_items": {
-      "friendly": "catalog items",
-      "description": "Product catalog data"
+      "friendly": "catalog data",
+      "description": "Data from catalog items",
+      "category": "catalog"
     },
-    
     "content_blocks": {
       "friendly": "content blocks",
-      "description": "Content block data"
+      "description": "Content block data",
+      "category": "content"
     },
-    
     "recommended_products": {
       "friendly": "recommended products",
-      "description": "Product recommendations"
+      "description": "Product recommendations",
+      "category": "commerce"
     },
-    
     "cart": {
       "friendly": "shopping cart",
-      "description": "User's shopping cart"
+      "description": "User's shopping cart",
+      "category": "commerce"
     },
-    
     "order": {
       "friendly": "order",
-      "description": "User's order information"
+      "description": "User's order information",
+      "category": "commerce"
     },
-    
     "purchase_history": {
       "friendly": "purchase history",
-      "description": "User's previous purchases"
+      "description": "User's previous purchases",
+      "category": "commerce"
     },
-    
     "preferences": {
       "friendly": "preferences",
-      "description": "User's preferences and settings"
+      "description": "User's preferences and settings",
+      "category": "standard"
     },
-    
     "subscription": {
       "friendly": "subscription",
-      "description": "User's subscription information"
+      "description": "User's subscription information",
+      "category": "subscription"
     },
     
-    "campaign": {
-      "friendly": "campaign",
-      "description": "Current marketing campaign"
+    "__http_status_code__": {
+      "friendly": "HTTP status code",
+      "description": "HTTP response status code from connected content",
+      "category": "connected_content"
+    },
+    
+    "result": {
+      "friendly": "API response data",
+      "description": "Data fetched from connected content API",
+      "category": "connected_content"
+    },
+    
+    "my_content": {
+      "friendly": "fetched content",
+      "description": "Content retrieved from external API",
+      "category": "connected_content"
+    },
+    
+    "publication": {
+      "friendly": "publication data",
+      "description": "Publication information from API",
+      "category": "connected_content"
+    },
+    
+    "postbody": {
+      "friendly": "POST request body",
+      "description": "JSON body for POST requests",
+      "category": "connected_content"
+    },
+    
+    "items": {
+      "friendly": "catalog items",
+      "description": "Array of items from catalog",
+      "category": "catalog"
+    },
+    
+    "venue_name": {
+      "friendly": "venue name",
+      "description": "Name of the venue from catalog",
+      "category": "catalog"
+    },
+    
+    "title": {
+      "friendly": "title",
+      "description": "Item title from catalog",
+      "category": "catalog"
+    },
+    
+    "price": {
+      "friendly": "price",
+      "description": "Item price from catalog",
+      "category": "catalog"
+    },
+    
+    "image_link": {
+      "friendly": "image URL",
+      "description": "Image link from catalog item",
+      "category": "catalog"
+    },
+    
+    "wishlist": {
+      "friendly": "wishlist",
+      "description": "User's wishlist items",
+      "category": "custom"
+    },
+    
+    "Welcome_Message": {
+      "friendly": "welcome message",
+      "description": "Welcome message from catalog",
+      "category": "catalog"
     }
   },
   
@@ -333,6 +840,348 @@
     "escape": {
       "friendly": "HTML escaped",
       "description": "Escapes HTML characters"
+    },
+    
+    "plus": {
+      "friendly": "plus {value}",
+      "description": "Adds a number to the input"
+    },
+    
+    "minus": {
+      "friendly": "minus {value}",
+      "description": "Subtracts a number from the input"
+    },
+    
+    "times": {
+      "friendly": "times {value}",
+      "description": "Multiplies the input by a number"
+    },
+    
+    "divided_by": {
+      "friendly": "divided by {value}",
+      "description": "Divides the input by a number"
+    },
+    
+    "where": {
+      "friendly": "where {value}",
+      "description": "Filters array by property value"
+    },
+    
+    "first": {
+      "friendly": "first item",
+      "description": "Gets the first item from an array"
+    },
+    
+    "last": {
+      "friendly": "last item", 
+      "description": "Gets the last item from an array"
+    },
+    
+    "size": {
+      "friendly": "count",
+      "description": "Returns the size of an array or string"
+    },
+    
+    "sort": {
+      "friendly": "sorted",
+      "description": "Sorts an array"
+    },
+    
+    "reverse": {
+      "friendly": "reversed",
+      "description": "Reverses the order of an array"
+    },
+    
+    "uniq": {
+      "friendly": "unique items only",
+      "description": "Removes duplicate items from an array"
+    },
+    
+    "map": {
+      "friendly": "mapped to {value}",
+      "description": "Extracts property values from array objects"
+    },
+    
+    "join": {
+      "friendly": "joined with {value}",
+      "description": "Joins array elements with a separator"
+    },
+    
+    "split": {
+      "friendly": "split by {value}",
+      "description": "Splits a string into an array"
+    },
+    
+    "replace": {
+      "friendly": "replace {value}",
+      "description": "Replaces text with another value"
+    },
+    
+    "remove": {
+      "friendly": "remove {value}",
+      "description": "Removes specified text"
+    },
+    
+    "append": {
+      "friendly": "append {value}",
+      "description": "Adds text to the end"
+    },
+    
+    "prepend": {
+      "friendly": "prepend {value}",
+      "description": "Adds text to the beginning"
+    },
+    
+    "date": {
+      "friendly": "formatted as {value}",
+      "description": "Formats a date"
+    },
+    
+    "round": {
+      "friendly": "rounded",
+      "description": "Rounds a number"
+    },
+    
+    "abs": {
+      "friendly": "absolute value",
+      "description": "Returns absolute value of a number"
+    },
+
+    "compact": {
+      "friendly": "with nil items removed",
+      "description": "Removes any nil items from an array"
+    },
+    
+    "concat": {
+      "friendly": "combined with {value}",
+      "description": "Combines an array with another array"
+    },
+    
+    "index": {
+      "friendly": "item at index {value}",
+      "description": "Returns the item at the specified index location in an array"
+    },
+    
+    "sort_natural": {
+      "friendly": "sorted alphabetically",
+      "description": "Sorts items in case-insensitive alphabetical order"
+    },
+    
+    "at_most": {
+      "friendly": "maximum {value}",
+      "description": "Limits a number to a maximum value"
+    },
+    
+    "at_least": {
+      "friendly": "minimum {value}",
+      "description": "Limits a number to a minimum value"
+    },
+    
+    "ceil": {
+      "friendly": "rounded up",
+      "description": "Rounds an output up to the nearest integer"
+    },
+    
+    "floor": {
+      "friendly": "rounded down",
+      "description": "Rounds an output down to the nearest integer"
+    },
+    
+    "modulo": {
+      "friendly": "modulo {value}",
+      "description": "Divides by a number and returns the remainder"
+    },
+    
+    "money": {
+      "friendly": "formatted as currency",
+      "description": "Formats numbers with proper decimal places"
+    },
+    
+    "camelcase": {
+      "friendly": "in CamelCase",
+      "description": "Converts a string into CamelCase (not supported in Braze)"
+    },
+    
+    "handle": {
+      "friendly": "as handle",
+      "description": "Formats a string into a handle (not supported in Braze)"
+    },
+    
+    "handleize": {
+      "friendly": "as handle",
+      "description": "Formats a string into a handle (not supported in Braze)"
+    },
+    
+    "md5": {
+      "friendly": "MD5 hashed",
+      "description": "Converts a string into an MD5 hash"
+    },
+    
+    "sha1": {
+      "friendly": "SHA-1 hashed",
+      "description": "Converts a string into a SHA-1 hash"
+    },
+    
+    "hmac_sha1_hex": {
+      "friendly": "HMAC SHA-1 hashed with {value}",
+      "description": "Converts a string into a SHA-1 hash using HMAC"
+    },
+    
+    "hmac_sha_1": {
+      "friendly": "HMAC SHA-1 hashed with {value}",
+      "description": "Converts a string into a SHA-1 hash using HMAC (legacy)"
+    },
+    
+    "hmac_sha256": {
+      "friendly": "HMAC SHA-256 hashed with {value}",
+      "description": "Converts a string into a SHA-256 hash using HMAC"
+    },
+    
+    "hmac_sha512": {
+      "friendly": "HMAC SHA-512 hashed with {value}",
+      "description": "Converts a string into a SHA-512 hash using HMAC"
+    },
+    
+    "newline_to_br": {
+      "friendly": "with line breaks as HTML",
+      "description": "Inserts HTML <br> tags for line breaks"
+    },
+    
+    "pluralize": {
+      "friendly": "pluralized",
+      "description": "Outputs singular or plural based on number (not supported in Braze)"
+    },
+    
+    "remove_first": {
+      "friendly": "remove first {value}",
+      "description": "Removes only the first occurrence of a substring"
+    },
+    
+    "replace_first": {
+      "friendly": "replace first {value}",
+      "description": "Replaces the first occurrence of a string"
+    },
+    
+    "slice": {
+      "friendly": "slice from {value}",
+      "description": "Returns a substring starting at the specified index"
+    },
+    
+    "lstrip": {
+      "friendly": "left whitespace removed",
+      "description": "Strips whitespace from the left side (not supported in Braze)"
+    },
+    
+    "rstrip": {
+      "friendly": "right whitespace removed", 
+      "description": "Strips whitespace from the right side (not supported in Braze)"
+    },
+    
+    "strip_html": {
+      "friendly": "HTML tags removed",
+      "description": "Strips all HTML tags from a string"
+    },
+    
+    "strip_newlines": {
+      "friendly": "newlines removed",
+      "description": "Removes any line breaks/newlines from a string"
+    },
+    
+    "truncatewords": {
+      "friendly": "truncated to {value} words",
+      "description": "Truncates a string to the specified number of words"
+    },
+    
+    "format_address": {
+      "friendly": "formatted as address",
+      "description": "Formats an address by locale (not supported in Braze)"
+    },
+    
+    "highlight": {
+      "friendly": "highlighted",
+      "description": "Wraps search results with HTML highlight tags (not supported in Braze)"
+    },
+    
+    "time_zone": {
+      "friendly": "in time zone {value}",
+      "description": "Converts time to specified time zone"
+    },
+    
+    "money_with_currency": {
+      "friendly": "formatted as currency with symbol",
+      "description": "Formats numbers with currency symbol (not supported in Braze)"
+    },
+    
+    "money_without_currency": {
+      "friendly": "formatted as currency without symbol",
+      "description": "Formats numbers without currency symbol (not supported in Braze)"
+    },
+    
+    "json_escape": {
+      "friendly": "JSON escaped",
+      "description": "Escapes special characters for JSON format"
+    },
+    
+    "url_param_escape": {
+      "friendly": "URL parameter escaped",
+      "description": "Escapes characters for safe URL parameter usage"
+    }
+  },
+  
+  "operators": {
+    "==": {
+      "friendly": "equals",
+      "technical": "==",
+      "description": "Checks if two values are equal",
+      "type": "comparison"
+    },
+    "!=": {
+      "friendly": "does not equal",
+      "technical": "!=", 
+      "description": "Checks if two values are not equal",
+      "type": "comparison"
+    },
+    ">": {
+      "friendly": "is greater than",
+      "technical": ">",
+      "description": "Checks if left value is greater than right value",
+      "type": "comparison"
+    },
+    "<": {
+      "friendly": "is less than",
+      "technical": "<",
+      "description": "Checks if left value is less than right value", 
+      "type": "comparison"
+    },
+    ">=": {
+      "friendly": "is greater than or equal to",
+      "technical": ">=",
+      "description": "Checks if left value is greater than or equal to right value",
+      "type": "comparison"
+    },
+    "<=": {
+      "friendly": "is less than or equal to", 
+      "technical": "<=",
+      "description": "Checks if left value is less than or equal to right value",
+      "type": "comparison"
+    },
+    "or": {
+      "friendly": "OR",
+      "technical": "or",
+      "description": "Logical OR - true if either condition A or condition B is true",
+      "type": "logical"
+    },
+    "and": {
+      "friendly": "AND",
+      "technical": "and", 
+      "description": "Logical AND - true only if both condition A and condition B are true",
+      "type": "logical"
+    },
+    "contains": {
+      "friendly": "contains",
+      "technical": "contains",
+      "description": "Checks if a string or array contains a specific value",
+      "type": "comparison"
     }
   },
   
@@ -374,6 +1223,79 @@
   "variablePatterns": {
     "dollarBrace": "\\$\\{([^}]+)\\}",
     "doubleBrace": "\\{\\{([^}]+)\\}\\}",
-    "complexPath": "([a-zA-Z_][a-zA-Z0-9_]*(?:\\.[a-zA-Z0-9_\\${}.\\s\"'-]+)*)"
+    "complexPath": "([a-zA-Z_][a-zA-Z0-9_]*(?:\\.[a-zA-Z0-9_\\${}.\\s\"'-]+)*)",
+    "brazePersonalization": "\\{\\{\\$\\{([^}]+)\\}\\}\\}",
+    "brazeNestedObject": "\\{\\{([a-zA-Z_][a-zA-Z0-9_]*)\\.\\$\\{([^}]+)\\}\\}\\}",
+    "brazeObjectProperty": "\\{\\{([a-zA-Z_][a-zA-Z0-9_]*)\\.([a-zA-Z_][a-zA-Z0-9_]*)\\}\\}",
+    "subscriptionState": "\\{\\{subscribed_state\\.\\$\\{([^}]+)\\}\\}\\}"
+  },
+
+  "dynamicPatterns": {
+    "subscribed_state": {
+      "pattern": "subscribed_state.${subscription_id}",
+      "friendly": "subscription status for {subscription_id}",
+      "description": "User's subscription status for a specific subscription group",
+      "category": "subscription"
+    },
+    "event_properties": {
+      "pattern": "event_properties.${property_name}", 
+      "friendly": "event data: {property_name}",
+      "description": "Custom event property value",
+      "category": "event"
+    },
+    "custom_attribute": {
+      "pattern": "custom_attribute.${attribute_name}",
+      "friendly": "custom {attribute_name}",
+      "description": "Custom user attribute value", 
+      "category": "custom"
+    },
+    "most_recently_used_device": {
+      "pattern": "most_recently_used_device.${device_property}",
+      "friendly": "{device_property} (current device)",
+      "description": "Property from user's most recent device",
+      "category": "device"
+    },
+    "targeted_device": {
+      "pattern": "targeted_device.${device_property}",
+      "friendly": "{device_property} (target device)",
+      "description": "Property from device receiving this message",
+      "category": "targeted_device"
+    },
+    "campaign": {
+      "pattern": "campaign.${campaign_property}",
+      "friendly": "campaign {campaign_property}",
+      "description": "Campaign metadata property",
+      "category": "campaign"
+    },
+    "canvas": {
+      "pattern": "canvas.${canvas_property}",
+      "friendly": "Canvas {canvas_property}",
+      "description": "Canvas journey metadata property",
+      "category": "canvas"
+    },
+    "card": {
+      "pattern": "card.${card_property}",
+      "friendly": "card {card_property}",
+      "description": "Content card metadata property",
+      "category": "card"
+    },
+    "app": {
+      "pattern": "app.${app_property}",
+      "friendly": "app {app_property}",
+      "description": "Application metadata property",
+      "category": "app"
+    },
+    "sms": {
+      "pattern": "sms.${sms_property}",
+      "friendly": "SMS {sms_property}",
+      "description": "SMS message property",
+      "category": "sms"
+    },
+    "whats_app": {
+      "pattern": "whats_app.${whatsapp_property}",
+      "friendly": "WhatsApp {whatsapp_property}",
+      "description": "WhatsApp message property",
+      "category": "whatsapp"
+    }
   }
 } 

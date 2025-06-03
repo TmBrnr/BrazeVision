@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Catalog Pattern Debug</title>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        .test { margin: 20px 0; padding: 10px; border: 1px solid #ccc; }
+        .original { color: #666; }
+        .result { color: #009; font-weight: bold; }
+        .error { color: #c00; }
+    </style>
+</head>
+<body>
+    <h1>Catalog Pattern Debug - Smooth Output Test</h1>
+    
+    <div id="output"></div>
+    
+    <script src="src/core/ConfigManager.js"></script>
+    <script src="src/patterns/PatternMatcher.js"></script>
+    <script>
+        async function debug() {
+            const configManager = new ConfigManager();
+            await configManager.loadConfig();
+            
+            const patternMatcher = new PatternMatcher(configManager);
+            patternMatcher.setDisplayMode('friendly');
+
+            const testCases = [
+                '{% catalog_items Messages greet_msg :rerender %}',
+                '{% catalog_items Games 1234 %}',
+                '{% catalog_items games 1234 1235 1236 %}',
+                '{% catalog_items Games %}',
+                '{% catalog_selection_items item-list selections %}',
+                '{% connected_content https://api.example.com :rerender %}',
+                '{% connected_content https://api.example.com :save result %}',
+                '{% abort_message("test reason") %}',
+                '{% abort_message() %}',
+                '{% promotion("vip-deal") %}',
+                '{% promotion("SUMMER2024") %}'
+            ];
+
+            const output = document.getElementById('output');
+            
+            testCases.forEach(testCase => {
+                const div = document.createElement('div');
+                div.className = 'test';
+                
+                try {
+                    const matches = patternMatcher.findLiquidMatches(testCase);
+                    div.innerHTML = `
+                        <div class="original">Input: ${testCase}</div>
+                        <div class="result">Output: ${matches.length > 0 ? matches[0].clean : 'No matches'}</div>
+                        <div>Pattern: ${matches.length > 0 ? matches[0].pattern : 'None'}</div>
+                    `;
+                } catch (error) {
+                    div.innerHTML = `
+                        <div class="original">Input: ${testCase}</div>
+                        <div class="error">Error: ${error.message}</div>
+                    `;
+                }
+                
+                output.appendChild(div);
+            });
+        }
+
+        window.addEventListener('load', debug);
+    </script>
+</body>
+</html> 
