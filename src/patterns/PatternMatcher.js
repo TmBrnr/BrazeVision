@@ -41,8 +41,6 @@ class PatternMatcher {
           matchedPattern = this.identifyOutputPattern(rawContent);
         }
         
-        console.log(`[PatternMatcher] Found ${pattern.type}: "${fullMatch}" -> "${humanReadable}" (pattern: ${matchedPattern})`);
-        
         if (humanReadable.trim()) {
           allMatches.push({
             start: match.index,
@@ -64,8 +62,6 @@ class PatternMatcher {
     const patterns = this.configManager.getPatterns();
     if (!patterns) return null;
     
-    console.log(`[PatternMatcher] Analyzing tag content: "${content}"`);
-    
     // Clean up the content - remove extra whitespace but preserve structure
     let cleanContent = content.replace(/\s+/g, ' ').trim();
     
@@ -80,10 +76,7 @@ class PatternMatcher {
         const flexibleRegex = pattern.regex.replace(/\\s\+/g, '\\s*').replace(/\\s\*/g, '\\s*');
         const regex = new RegExp(flexibleRegex, flags);
         
-        console.log(`[PatternMatcher] Testing pattern "${patternName}" with regex: ${flexibleRegex}`);
-        
         if (regex.test(cleanContent)) {
-          console.log(`[PatternMatcher] ✅ MATCHED pattern: "${patternName}"`);
           return patternName;
         }
       } catch (error) {
@@ -133,25 +126,20 @@ class PatternMatcher {
     
     for (const [pattern, regex] of Object.entries(fallbackPatterns)) {
       if (regex.test(cleanContent)) {
-        console.log(`[PatternMatcher] ✅ FALLBACK MATCHED: "${pattern}"`);
         return pattern;
       }
     }
     
-    console.log(`[PatternMatcher] ❌ No pattern matched for: "${cleanContent}"`);
     return null;
   }
 
   identifyOutputPattern(content) {
     if (!content) return null;
     
-    console.log(`[PatternMatcher] Analyzing output content: "${content}"`);
-    
     const cleanContent = content.trim();
     
     // First, handle ${variable} patterns - these should be treated as variables
     if (/\$\{[^}]+\}/i.test(cleanContent)) {
-      console.log(`[PatternMatcher] ✅ MATCHED: Variable with \${} syntax`);
       return 'variable';
     }
     
@@ -172,12 +160,10 @@ class PatternMatcher {
     
     for (const [pattern, regex] of Object.entries(outputPatterns)) {
       if (regex.test(cleanContent)) {
-        console.log(`[PatternMatcher] ✅ MATCHED output pattern: "${pattern}"`);
         return pattern;
       }
     }
     
-    console.log(`[PatternMatcher] ❌ No output pattern matched for: "${cleanContent}"`);
     return 'variable'; // Default fallback
   }
 
@@ -222,31 +208,23 @@ class PatternMatcher {
   fillTemplate(template, match, pattern) {
     let result = template;
     
-    console.log(`[PatternMatcher] fillTemplate called with template: "${template}", match groups:`, match);
-    
     if (pattern.placeholderMap) {
       for (const [placeholder, groupIndex] of Object.entries(pattern.placeholderMap)) {
         let value = match[groupIndex] || pattern.defaults?.[placeholder] || placeholder;
         
         // Process the value through humanizeNestedLiquid if it contains liquid syntax
         if (typeof value === 'string' && (value.includes('{{') || value.includes('${')) ) {
-          console.log(`[PatternMatcher] Processing value "${value}" through humanizeNestedLiquid`);
           value = this.humanizeNestedLiquid(value);
-          console.log(`[PatternMatcher] Processed value result: "${value}"`);
         }
         
         result = result.replace(new RegExp(`\\{${placeholder}\\}`, 'g'), value);
-        console.log(`[PatternMatcher] Replaced {${placeholder}} with "${value}" -> "${result}"`);
       }
     }
     
-    console.log(`[PatternMatcher] fillTemplate final result: "${result}"`);
     return result;
   }
 
   getFallbackTransformation(content) {
-    console.log(`[PatternMatcher] getFallbackTransformation called with: "${content}" in mode: ${this.displayMode}`);
-    
     // Mode-aware transformations
     const friendlyTransformations = [
       {
@@ -267,14 +245,8 @@ class PatternMatcher {
       {
         regex: /^assign\s+(\w+)\s*=\s*(.+)$/i,
         transform: (match) => {
-          console.log(`[PatternMatcher] Assignment pattern matched:`, {
-            full: match[0],
-            variable: match[1], 
-            value: match[2]
-          });
           const value = this.humanizeNestedLiquid(match[2]);
           const result = `Create variable: ${match[1]} = ${value}`;
-          console.log(`[PatternMatcher] Assignment result: "${result}"`);
           return result;
         }
       },
@@ -316,21 +288,14 @@ class PatternMatcher {
     
     const transformations = this.displayMode === 'technical' ? technicalTransformations : friendlyTransformations;
     
-    console.log(`[PatternMatcher] Using ${this.displayMode} transformations, testing ${transformations.length} patterns`);
-    
     for (const transformation of transformations) {
       const match = content.match(transformation.regex);
       if (match) {
-        console.log(`[PatternMatcher] ✅ Pattern matched:`, transformation.regex, 'with groups:', match);
         const result = transformation.transform(match);
-        console.log(`[PatternMatcher] ✅ Transformation result: "${result}"`);
         return result;
-      } else {
-        console.log(`[PatternMatcher] ❌ Pattern did not match:`, transformation.regex);
       }
     }
     
-    console.log(`[PatternMatcher] ❌ No fallback patterns matched, returning original: "${content}"`);
     return content;
   }
 
@@ -339,44 +304,32 @@ class PatternMatcher {
       return content;
     }
     
-    console.log(`[PatternMatcher] humanizeNestedLiquid input: "${content}"`);
-    
     // Handle the special case {{${variable}}} - direct variable reference
     const directVarPattern = /\{\{\$\{([^}]+)\}\}\}/g;
     let result = content.replace(directVarPattern, (match, variable) => {
-      console.log(`[PatternMatcher] Found direct variable pattern: "${match}" -> variable: "${variable}"`);
-      
       // Convert variable to friendly format
       const friendlyVar = this.createSimpleDescription(variable);
-      console.log(`[PatternMatcher] Converted "${variable}" to friendly: "${friendlyVar}"`);
-      
       return friendlyVar;
     });
     
     // Handle the common case: {{custom_attribute.${variable}}}
     const commonPattern = /\{\{([^}]+\$\{[^}]+\}[^}]*)\}\}/g;
     result = result.replace(commonPattern, (match, innerContent) => {
-      console.log(`[PatternMatcher] Found common nested pattern: "${match}" -> inner: "${innerContent}"`);
       const transformed = this.transformOutputContent(innerContent);
-      console.log(`[PatternMatcher] Transformed to: "${transformed}"`);
       return transformed;
     });
     
     // Handle any remaining {{...}} patterns (without ${} inside)
     result = result.replace(/\{\{([^{}]+)\}\}/g, (match, innerContent) => {
-      console.log(`[PatternMatcher] Found simple nested pattern: "${match}" -> inner: "${innerContent}"`);
       const transformed = this.transformOutputContent(innerContent);
-      console.log(`[PatternMatcher] Transformed to: "${transformed}"`);
       return transformed;
     });
     
     // Handle standalone ${variable} syntax - convert to just the variable name
     result = result.replace(/\$\{([^}]+)\}/g, (match, variable) => {
-      console.log(`[PatternMatcher] Converting standalone \${${variable}} to: ${variable}`);
       return variable;
     });
     
-    console.log(`[PatternMatcher] humanizeNestedLiquid result: "${result}"`);
     return result;
   }
 
@@ -462,19 +415,12 @@ class PatternMatcher {
       return content;
     }
     
-    console.log(`[PatternMatcher] processDoubleBraceVariables input: "${content}"`);
-    
     const result = content.replace(/\$\{([^}]+)\}/g, (match, variable) => {
-      console.log(`[PatternMatcher] Processing \${${variable}}`);
-      
       // Convert to friendly format using our description method
       const friendlyVar = this.createSimpleDescription(variable);
-      console.log(`[PatternMatcher] Converted "${variable}" to "${friendlyVar}"`);
-      
       return friendlyVar;
     });
     
-    console.log(`[PatternMatcher] processDoubleBraceVariables result: "${result}"`);
     return result;
   }
 
@@ -602,7 +548,6 @@ class PatternMatcher {
     // Capitalize first letter
     readable = readable.charAt(0).toUpperCase() + readable.slice(1);
     
-    console.log(`[PatternMatcher] createSimpleDescription: "${variable}" -> "${readable}"`);
     return readable;
   }
 

@@ -9,43 +9,85 @@ class EventManager {
     this.lastContentHash = '';
     this.observers = {
       mutation: null,
-      iframe: null
+      iframe: null,
+      iframeSpecific: new Map() // Track individual iframe observers
     };
+    this.eventListeners = new Map(); // Track event listeners for cleanup
+    this.isInitialized = false; // Prevent double initialization
   }
 
   initialize() {
+    // Prevent double initialization
+    if (this.isInitialized) {
+      return;
+    }
+
     this.setupEventListeners();
     this.setupMutationObserver();
     this.setupMessageListener();
     this.setupStorageListener();
     this.startPeriodicCheck();
+    this.isInitialized = true;
   }
 
   setupEventListeners() {
+    // Clear any existing listeners first
+    this.removeEventListeners();
+
     const events = ['input', 'change', 'keyup', 'paste', 'cut', 'focus', 'blur'];
     
     events.forEach(eventType => {
-      document.addEventListener(eventType, (e) => {
+      const handler = (e) => {
         if (this.isEnabled) {
           this.debounceHighlight();
         }
-      }, true);
+      };
+      
+      document.addEventListener(eventType, handler, true);
+      
+      // Track for cleanup
+      if (!this.eventListeners.has(eventType)) {
+        this.eventListeners.set(eventType, []);
+      }
+      this.eventListeners.get(eventType).push({ handler, options: true });
     });
 
-    document.addEventListener('load', (e) => {
+    // Load event for iframes
+    const loadHandler = (e) => {
       if (e.target.tagName === 'IFRAME') {
         setTimeout(() => this.debounceHighlight(), 1000);
       }
-    }, true);
+    };
+    document.addEventListener('load', loadHandler, true);
+    this.eventListeners.set('load', [{ handler: loadHandler, options: true }]);
 
-    document.addEventListener('visibilitychange', () => {
+    // Visibility change event
+    const visibilityHandler = () => {
       if (!document.hidden && this.isEnabled) {
         setTimeout(() => this.refreshHighlighting(), 500);
       }
-    });
+    };
+    document.addEventListener('visibilitychange', visibilityHandler);
+    this.eventListeners.set('visibilitychange', [{ handler: visibilityHandler, options: false }]);
+  }
+
+  removeEventListeners() {
+    // Remove all tracked event listeners
+    for (const [eventType, listeners] of this.eventListeners) {
+      listeners.forEach(({ handler, options }) => {
+        document.removeEventListener(eventType, handler, options);
+      });
+    }
+    this.eventListeners.clear();
   }
 
   setupMutationObserver() {
+    // Disconnect existing observer if it exists
+    if (this.observers.mutation) {
+      this.observers.mutation.disconnect();
+      this.observers.mutation = null;
+    }
+
     this.observers.mutation = new MutationObserver((mutations) => {
       if (!this.isEnabled) return;
 
@@ -98,7 +140,6 @@ class EventManager {
   setupMessageListener() {
     // Message handling is now done in the main LiquidHighlighter.js file
     // to avoid duplicate listeners and conflicts
-    console.log('[EventManager] Message handling delegated to main highlighter');
   }
 
   setupStorageListener() {
@@ -119,6 +160,9 @@ class EventManager {
   }
 
   startPeriodicCheck() {
+    // Clear existing interval if it exists
+    this.stopPeriodicCheck();
+
     this.checkInterval = setInterval(() => {
       if (this.isEnabled && document.hasFocus()) {
         this.checkForContentChanges();
@@ -189,6 +233,7 @@ class EventManager {
     this.isEnabled = false;
     this.domProcessor.removeHighlights();
     this.stopPeriodicCheck();
+    this.stopIframeMonitoring(); // Clean up iframe observers
   }
 
   changeDisplayMode(mode) {
@@ -204,18 +249,21 @@ class EventManager {
     
     // Save to storage
     this.storageManager.setDisplayMode(mode);
-    
-    console.log(`[EventManager] Display mode changed to: ${mode}, highlights refreshed`);
   }
 
   monitorIframes() {
+    // Don't create multiple iframe observers
+    if (this.observers.iframe) {
+      return;
+    }
+
     const iframes = document.querySelectorAll('iframe');
     iframes.forEach(iframe => {
       this.handleIframe(iframe);
     });
 
     // Watch for new iframes
-    const iframeObserver = new MutationObserver((mutations) => {
+    this.observers.iframe = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         mutation.addedNodes.forEach((node) => {
           if (node.nodeType === Node.ELEMENT_NODE) {
@@ -227,31 +275,88 @@ class EventManager {
             }
           }
         });
+
+        // Clean up observers for removed iframes
+        mutation.removedNodes.forEach((node) => {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            if (node.tagName === 'IFRAME') {
+              this.cleanupIframeObserver(node);
+            } else {
+              const iframes = node.querySelectorAll('iframe');
+              iframes.forEach(iframe => this.cleanupIframeObserver(iframe));
+            }
+          }
+        });
       });
     });
 
-    iframeObserver.observe(document.body, {
+    this.observers.iframe.observe(document.body, {
       childList: true,
       subtree: true
     });
+  }
 
-    this.observers.iframe = iframeObserver;
+  stopIframeMonitoring() {
+    // Disconnect main iframe observer
+    if (this.observers.iframe) {
+      this.observers.iframe.disconnect();
+      this.observers.iframe = null;
+    }
+
+    // Disconnect all iframe-specific observers
+    for (const [iframe, observer] of this.observers.iframeSpecific) {
+      observer.disconnect();
+    }
+    this.observers.iframeSpecific.clear();
   }
 
   handleIframe(iframe) {
-    console.log('[EventManager] Processing iframe:', iframe.src);
-    
+    // Don't create duplicate observers for the same iframe
+    if (this.observers.iframeSpecific.has(iframe)) {
+      return;
+    }
+
     const processIframeContent = () => {
       if (this.isEnabled) {
         this.domProcessor.processIframeContent(iframe);
       }
     };
 
+    // Create a specific observer for this iframe's content changes
+    try {
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+      if (iframeDoc) {
+        const iframeObserver = new MutationObserver(() => {
+          if (this.isEnabled) {
+            this.debounceHighlight();
+          }
+        });
+
+        iframeObserver.observe(iframeDoc.body, {
+          childList: true,
+          subtree: true,
+          characterData: true
+        });
+
+        this.observers.iframeSpecific.set(iframe, iframeObserver);
+      }
+    } catch (error) {
+      // Cross-origin restriction - can't observe iframe content
+    }
+
     iframe.addEventListener('load', processIframeContent);
     
     // Try to process immediately if already loaded
     if (iframe.contentDocument) {
       setTimeout(processIframeContent, 500);
+    }
+  }
+
+  cleanupIframeObserver(iframe) {
+    const observer = this.observers.iframeSpecific.get(iframe);
+    if (observer) {
+      observer.disconnect();
+      this.observers.iframeSpecific.delete(iframe);
     }
   }
 
@@ -266,6 +371,11 @@ class EventManager {
     highlightedChildren.forEach(child => {
       this.domProcessor.cleanupElement(child);
     });
+
+    // Clean up iframe observers if iframe was removed
+    if (node.tagName === 'IFRAME') {
+      this.cleanupIframeObserver(node);
+    }
   }
 
   // Performance monitoring
@@ -290,36 +400,54 @@ class EventManager {
 
   // Cleanup method for when the extension is disabled or page unloads
   cleanup() {
-    // Clear intervals
+    // Mark as not initialized to prevent further operations
+    this.isInitialized = false;
+
+    // Clear intervals and timeouts
     this.stopPeriodicCheck();
     
-    // Clear timeouts
     if (this.highlightTimeout) {
       clearTimeout(this.highlightTimeout);
+      this.highlightTimeout = null;
     }
     
-    // Disconnect observers
+    // Remove all event listeners
+    this.removeEventListeners();
+    
+    // Disconnect main observers
     if (this.observers.mutation) {
       this.observers.mutation.disconnect();
+      this.observers.mutation = null;
     }
     
-    if (this.observers.iframe) {
-      this.observers.iframe.disconnect();
-    }
+    // Stop iframe monitoring (includes cleanup of all iframe observers)
+    this.stopIframeMonitoring();
     
     // Remove highlights
-    this.domProcessor.removeHighlights();
+    if (this.domProcessor) {
+      this.domProcessor.removeHighlights();
+    }
   }
 
   // Get statistics about current state
   getStats() {
     return {
       enabled: this.isEnabled,
+      initialized: this.isInitialized,
       highlightedElements: this.domProcessor.getHighlightedElementsCount(),
       lastContentHash: this.lastContentHash,
       observers: {
         mutation: !!this.observers.mutation,
-        iframe: !!this.observers.iframe
+        iframe: !!this.observers.iframe,
+        iframeSpecific: this.observers.iframeSpecific.size
+      },
+      eventListeners: {
+        types: Array.from(this.eventListeners.keys()),
+        total: Array.from(this.eventListeners.values()).reduce((sum, arr) => sum + arr.length, 0)
+      },
+      timers: {
+        highlightTimeout: !!this.highlightTimeout,
+        checkInterval: !!this.checkInterval
       }
     };
   }

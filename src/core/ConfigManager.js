@@ -23,7 +23,6 @@ class ConfigManager {
     try {
       const response = await fetch(chrome.runtime.getURL('liquid-config.json'));
       this.config = await response.json();
-      console.log('[ConfigManager] Configuration loaded successfully');
       return this.config;
     } catch (error) {
       console.error('[ConfigManager] Failed to load liquid config:', error);
