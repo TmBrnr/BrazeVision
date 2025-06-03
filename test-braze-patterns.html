@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Braze Personalization Pattern Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #1e40af;
+            margin-top: 0;
+        }
+        .test-case {
+            margin: 15px 0;
+            padding: 10px;
+            background: #f1f5f9;
+            border-radius: 4px;
+            border-left: 4px solid #3b82f6;
+        }
+        .original {
+            font-family: 'Monaco', 'Menlo', monospace;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+        .processed {
+            font-weight: 500;
+            color: #1e40af;
+        }
+        .category {
+            font-size: 0.875rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        /* Pattern-specific color coding */
+        .liquid-tag.abort-message {
+            background: #fef2f2;
+            border-left-color: #dc2626;
+        }
+        
+        .liquid-tag.connected-content {
+            background: #eff6ff;
+            border-left-color: #2563eb;
+        }
+        
+        .liquid-tag.braze-variable {
+            background: #f0fdf4;
+            border-left-color: #16a34a;
+        }
+        
+        .liquid-tag.conditional {
+            background: #fef2f2;
+            border-left-color: #dc2626;
+        }
+        
+        .liquid-tag.loop {
+            background: #fffbeb;
+            border-left-color: #d97706;
+        }
+        
+        .processed.braze-specific {
+            color: #dc2626;
+            font-weight: 600;
+        }
+        
+        .processed.api-call {
+            color: #2563eb;
+            font-weight: 600;
+        }
+        
+        .processed.braze-variable {
+            color: #16a34a;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <h1>Braze Personalization Pattern Test</h1>
+    <p>Testing enhanced support for all Braze personalization tag types</p>
+
+    <div class="test-section">
+        <h2>Standard User Attributes</h2>
+        <div class="category">Basic ${variable} format</div>
+        
+        <div class="test-case">
+            <div class="original">{{${city}}}</div>
+            <div class="processed" id="test-city"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{{${email_address}}}</div>
+            <div class="processed" id="test-email"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{{${first_name}}}</div>
+            <div class="processed" id="test-firstname"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{{${braze_id}}}</div>
+            <div class="processed" id="test-brazeid"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Device Attributes</h2>
+        <div class="category">Most recently used device</div>
+        
+        <div class="test-case">
+            <div class="original">{{most_recently_used_device.${carrier}}}</div>
+            <div class="processed" id="test-device-carrier"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{{most_recently_used_device.${model}}}</div>
+            <div class="processed" id="test-device-model"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{{targeted_device.${platform}}}</div>
+            <div class="processed" id="test-target-platform"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Campaign & Canvas Attributes</h2>
+        <div class="category">System metadata</div>
+        
+        <div class="test-case">
+            <div class="original">{{campaign.${name}}}</div>
+            <div class="processed" id="test-campaign-name"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{{canvas.${variant_name}}}</div>
+            <div class="processed" id="test-canvas-variant"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{{card.${api_id}}}</div>
+            <div class="processed" id="test-card-api"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Dynamic Properties</h2>
+        <div class="category">Event and custom attributes</div>
+        
+        <div class="test-case">
+            <div class="original">{{event_properties.${geofence_name}}}</div>
+            <div class="processed" id="test-event-geofence"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{{custom_attribute.${my_custom_field}}}</div>
+            <div class="processed" id="test-custom-field"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{{subscribed_state.${email_global}}}</div>
+            <div class="processed" id="test-subscription"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Communication Channels</h2>
+        <div class="category">SMS and WhatsApp</div>
+        
+        <div class="test-case">
+            <div class="original">{{sms.${inbound_message_body}}}</div>
+            <div class="processed" id="test-sms-body"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{{whats_app.${inbound_media_urls}}}</div>
+            <div class="processed" id="test-whatsapp-media"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Email URLs</h2>
+        <div class="category">Special email management links</div>
+        
+        <div class="test-case">
+            <div class="original">{{${set_user_to_unsubscribed_url}}}</div>
+            <div class="processed" id="test-unsubscribe-url"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{{${set_user_to_opted_in_url}}}</div>
+            <div class="processed" id="test-optin-url"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Operators in Conditional Expressions</h2>
+        <div class="category">Liquid operators in if/unless statements</div>
+        
+        <div class="test-case">
+            <div class="original">{% if user.age >= 18 %}</div>
+            <div class="processed" id="test-operator-gte"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% if user.name != "Anonymous" %}</div>
+            <div class="processed" id="test-operator-neq"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% if product.price < 100 %}</div>
+            <div class="processed" id="test-operator-lt"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% unless user.email == "" %}</div>
+            <div class="processed" id="test-operator-unless-eq"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% if user.premium == true or user.trial_active == true %}</div>
+            <div class="processed" id="test-operator-or"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% if user.age > 21 and user.location == "US" %}</div>
+            <div class="processed" id="test-operator-and"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% if user.interests contains "sports" %}</div>
+            <div class="processed" id="test-operator-contains"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% if {{${first_name}}} != "" and {{${last_name}}} != "" %}</div>
+            <div class="processed" id="test-operator-braze-vars"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Complex Real-World Test Cases</h2>
+        <div class="category">Advanced combinations and edge cases</div>
+        
+        <div class="test-case">
+            <div class="original">{% if {{custom_attribute.${membership_level}}} == "premium" and {{${age}}} >= 18 %}</div>
+            <div class="processed" id="test-complex-membership"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% unless {{most_recently_used_device.${platform}}} == "ios" or {{targeted_device.${platform}}} == "android" %}</div>
+            <div class="processed" id="test-complex-devices"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% if {{campaign.${name}}} contains "Black Friday" and {{${country}}} == "US" %}</div>
+            <div class="processed" id="test-complex-campaign"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% for product in {{custom_attribute.${shopping_cart}.items}} limit:{{custom_attribute.${max_display}}} %}</div>
+            <div class="processed" id="test-complex-loop"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% assign user_score = {{event_properties.${total_points}}} | plus: {{custom_attribute.${bonus_points}}} %}</div>
+            <div class="processed" id="test-complex-assign"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% if {{subscribed_state.${email_global}}} == "subscribed" and {{sms.${inbound_message_body}}} contains "STOP" %}</div>
+            <div class="processed" id="test-complex-subscription"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% unless {{canvas.${variant_name}}} == "control" and {{${random_bucket_number}}} <= 50 %}</div>
+            <div class="processed" id="test-complex-canvas"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{{${set_user_to_unsubscribed_url}}} | default: "https://fallback.com/unsubscribe" | escape</div>
+            <div class="processed" id="test-complex-email-filters"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Edge Cases and Special Scenarios</h2>
+        <div class="category">Testing boundaries and unusual patterns</div>
+        
+        <div class="test-case">
+            <div class="original">{% if {{custom_attribute.${"User Preferences"}.theme}} == "dark" %}</div>
+            <div class="processed" id="test-edge-spaces"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% if {{most_recently_used_device.${ad_tracking_enabled}}} == true and {{targeted_device.${foreground_push_enabled}}} != false %}</div>
+            <div class="processed" id="test-edge-boolean"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% unless {{whats_app.${inbound_media_urls}}} == "" or {{whats_app.${inbound_message_body}}} == null %}</div>
+            <div class="processed" id="test-edge-whatsapp"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% if {{event_properties.${geofence_name}}} contains "Store" and {{${time_zone}}} == "America/New_York" %}</div>
+            <div class="processed" id="test-edge-geofence"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% assign dynamic_content = {{content_blocks.recommendations}} | where: "category", {{custom_attribute.${preferred_category}}} %}</div>
+            <div class="processed" id="test-edge-dynamic-filter"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% if {{app.${api_id}}} == "mobile_app" and {{card.${name}}} contains "Welcome" %}</div>
+            <div class="processed" id="test-edge-app-card"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% for item in {{api_trigger_properties.products}} limit:{{${random_bucket_number}}} %}</div>
+            <div class="processed" id="test-edge-api-trigger"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% if {{most_recent_locale}} contains "en" and {{language}} != {{most_recent_locale}} %}</div>
+            <div class="processed" id="test-edge-locale"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Liquid Filters Test Cases</h2>
+        <div class="category">Testing comprehensive filter support</div>
+        
+        <div class="test-case">
+            <div class="original">{{ "Big Sale" | upcase }}</div>
+            <div class="processed" id="test-filter-upcase"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{{ "Big Sale" | upcase | remove: "BIG" }}</div>
+            <div class="processed" id="test-filter-chained"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{{custom_attribute.${account_balance} | money}}</div>
+            <div class="processed" id="test-filter-money"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{{event_properties.${rewards_redeemed} | divided_by: 100.00 | money}}</div>
+            <div class="processed" id="test-filter-math-money"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{{custom_attribute.${items} | first}}</div>
+            <div class="processed" id="test-filter-array-first"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{{products | where: "category", "electronics" | size}}</div>
+            <div class="processed" id="test-filter-array-where"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{{user.interests | join: ", "}}</div>
+            <div class="processed" id="test-filter-join"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{{custom_attribute.${description} | truncate: 100}}</div>
+            <div class="processed" id="test-filter-truncate"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{{user.email | md5}}</div>
+            <div class="processed" id="test-filter-hash"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{{custom_attribute.${score} | plus: 10 | at_most: 100}}</div>
+            <div class="processed" id="test-filter-math-limit"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{{content | strip_html | strip_newlines}}</div>
+            <div class="processed" id="test-filter-string-clean"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{{${date_of_birth} | date: "%B %d, %Y"}}</div>
+            <div class="processed" id="test-filter-date"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Braze-Specific Tags</h2>
+        <div class="category">Testing abort_message and connected_content patterns</div>
+        
+        <div class="test-case">
+            <div class="original">{% abort_message() %}</div>
+            <div class="processed" id="test-abort-empty"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% abort_message('language was nil') %}</div>
+            <div class="processed" id="test-abort-reason"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% connected_content http://numbersapi.com/random/trivia :save result %}</div>
+            <div class="processed" id="test-connected-simple"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% connected_content https://api.example.com/data :method post :headers { "Authorization": "Bearer token" } :body campaign={{campaign_name}} :save publication %}</div>
+            <div class="processed" id="test-connected-complex"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% connected_content https://example.com/api :rerender %}</div>
+            <div class="processed" id="test-connected-rerender"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% connected_content [https://example.com/webservice.json] :cache_max_age 900 %}</div>
+            <div class="processed" id="test-connected-cache"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% if result.__http_status_code__ != 200 %}</div>
+            <div class="processed" id="test-status-code"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{{event_properties.${message} | json_escape}}</div>
+            <div class="processed" id="test-json-escape"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{{${email_address} | url_param_escape}}</div>
+            <div class="processed" id="test-url-escape"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% promotion("vip-deal") %}</div>
+            <div class="processed" id="test-promotion-quoted"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% promotion("SUMMER2024") %}</div>
+            <div class="processed" id="test-promotion-double-quoted"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Catalog Patterns</h2>
+        <div class="category">Testing catalog_items and catalog_selection_items patterns</div>
+        
+        <div class="test-case">
+            <div class="original">{% catalog_items Games %}</div>
+            <div class="processed" id="test-catalog-basic"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% catalog_items Games 1234 %}</div>
+            <div class="processed" id="test-catalog-single"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% catalog_items games 1234 1235 1236 %}</div>
+            <div class="processed" id="test-catalog-multiple"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% catalog_items Messages greet_msg :rerender %}</div>
+            <div class="processed" id="test-catalog-rerender"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% catalog_selection_items item-list selections %}</div>
+            <div class="processed" id="test-catalog-selection"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{{ items[0].title }}</div>
+            <div class="processed" id="test-catalog-item-title"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{{ items[0].price }}</div>
+            <div class="processed" id="test-catalog-item-price"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% if items[0].venue_name.size > 10 %}</div>
+            <div class="processed" id="test-catalog-conditional"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% assign wishlist = {{custom_attribute.${wishlist}}} %}</div>
+            <div class="processed" id="test-catalog-wishlist"></div>
+        </div>
+        
+        <div class="test-case">
+            <div class="original">{% catalog_items Games {{ wishlist[0] }} %}</div>
+            <div class="processed" id="test-catalog-dynamic"></div>
+        </div>
+    </div>
+
+    <script src="src/core/ConfigManager.js"></script>
+    <script src="src/patterns/PatternMatcher.js"></script>
+    <script>
+        async function runTests() {
+            const configManager = new ConfigManager();
+            await configManager.loadConfig();
+            
+            const patternMatcher = new PatternMatcher(configManager);
+            patternMatcher.setDisplayMode('friendly');
+
+            const testCases = [
+                // Standard attributes
+                { input: '{{${city}}}', elementId: 'test-city' },
+                { input: '{{${email_address}}}', elementId: 'test-email' },
+                { input: '{{${first_name}}}', elementId: 'test-firstname' },
+                { input: '{{${braze_id}}}', elementId: 'test-brazeid' },
+                
+                // Device attributes
+                { input: '{{most_recently_used_device.${carrier}}}', elementId: 'test-device-carrier' },
+                { input: '{{most_recently_used_device.${model}}}', elementId: 'test-device-model' },
+                { input: '{{targeted_device.${platform}}}', elementId: 'test-target-platform' },
+                
+                // Campaign & Canvas
+                { input: '{{campaign.${name}}}', elementId: 'test-campaign-name' },
+                { input: '{{canvas.${variant_name}}}', elementId: 'test-canvas-variant' },
+                { input: '{{card.${api_id}}}', elementId: 'test-card-api' },
+                
+                // Dynamic properties
+                { input: '{{event_properties.${geofence_name}}}', elementId: 'test-event-geofence' },
+                { input: '{{custom_attribute.${my_custom_field}}}', elementId: 'test-custom-field' },
+                { input: '{{subscribed_state.${email_global}}}', elementId: 'test-subscription' },
+                
+                // Communication channels
+                { input: '{{sms.${inbound_message_body}}}', elementId: 'test-sms-body' },
+                { input: '{{whats_app.${inbound_media_urls}}}', elementId: 'test-whatsapp-media' },
+                
+                // Email URLs
+                { input: '{{${set_user_to_unsubscribed_url}}}', elementId: 'test-unsubscribe-url' },
+                { input: '{{${set_user_to_opted_in_url}}}', elementId: 'test-optin-url' },
+                
+                // Operators in conditional expressions
+                { input: '{% if user.age >= 18 %}', elementId: 'test-operator-gte' },
+                { input: '{% if user.name != "Anonymous" %}', elementId: 'test-operator-neq' },
+                { input: '{% if product.price < 100 %}', elementId: 'test-operator-lt' },
+                { input: '{% unless user.email == "" %}', elementId: 'test-operator-unless-eq' },
+                { input: '{% if user.premium == true or user.trial_active == true %}', elementId: 'test-operator-or' },
+                { input: '{% if user.age > 21 and user.location == "US" %}', elementId: 'test-operator-and' },
+                { input: '{% if user.interests contains "sports" %}', elementId: 'test-operator-contains' },
+                { input: '{% if {{${first_name}}} != "" and {{${last_name}}} != "" %}', elementId: 'test-operator-braze-vars' },
+                
+                // Complex Real-World Test Cases
+                { input: '{% if {{custom_attribute.${membership_level}}} == "premium" and {{${age}}} >= 18 %}', elementId: 'test-complex-membership' },
+                { input: '{% unless {{most_recently_used_device.${platform}}} == "ios" or {{targeted_device.${platform}}} == "android" %}', elementId: 'test-complex-devices' },
+                { input: '{% if {{campaign.${name}}} contains "Black Friday" and {{${country}}} == "US" %}', elementId: 'test-complex-campaign' },
+                { input: '{% for product in {{custom_attribute.${shopping_cart}.items}} limit:{{custom_attribute.${max_display}}} %}', elementId: 'test-complex-loop' },
+                { input: '{% assign user_score = {{event_properties.${total_points}}} | plus: {{custom_attribute.${bonus_points}}} %}', elementId: 'test-complex-assign' },
+                { input: '{% if {{subscribed_state.${email_global}}} == "subscribed" and {{sms.${inbound_message_body}}} contains "STOP" %}', elementId: 'test-complex-subscription' },
+                { input: '{% unless {{canvas.${variant_name}}} == "control" and {{${random_bucket_number}}} <= 50 %}', elementId: 'test-complex-canvas' },
+                { input: '{{${set_user_to_unsubscribed_url}}} | default: "https://fallback.com/unsubscribe" | escape', elementId: 'test-complex-email-filters' },
+                
+                // Edge Cases and Special Scenarios
+                { input: '{% if {{custom_attribute.${"User Preferences"}.theme}} == "dark" %}', elementId: 'test-edge-spaces' },
+                { input: '{% if {{most_recently_used_device.${ad_tracking_enabled}}} == true and {{targeted_device.${foreground_push_enabled}}} != false %}', elementId: 'test-edge-boolean' },
+                { input: '{% unless {{whats_app.${inbound_media_urls}}} == "" or {{whats_app.${inbound_message_body}}} == null %}', elementId: 'test-edge-whatsapp' },
+                { input: '{% if {{event_properties.${geofence_name}}} contains "Store" and {{${time_zone}}} == "America/New_York" %}', elementId: 'test-edge-geofence' },
+                { input: '{% assign dynamic_content = {{content_blocks.recommendations}} | where: "category", {{custom_attribute.${preferred_category}}} %}', elementId: 'test-edge-dynamic-filter' },
+                { input: '{% if {{app.${api_id}}} == "mobile_app" and {{card.${name}}} contains "Welcome" %}', elementId: 'test-edge-app-card' },
+                { input: '{% for item in {{api_trigger_properties.products}} limit:{{${random_bucket_number}}} %}', elementId: 'test-edge-api-trigger' },
+                { input: '{% if {{most_recent_locale}} contains "en" and {{language}} != {{most_recent_locale}} %}', elementId: 'test-edge-locale' },
+                
+                // Liquid Filters Test Cases
+                { input: '{{ "Big Sale" | upcase }}', elementId: 'test-filter-upcase' },
+                { input: '{{ "Big Sale" | upcase | remove: "BIG" }}', elementId: 'test-filter-chained' },
+                { input: '{{custom_attribute.${account_balance} | money}}', elementId: 'test-filter-money' },
+                { input: '{{event_properties.${rewards_redeemed} | divided_by: 100.00 | money}}', elementId: 'test-filter-math-money' },
+                { input: '{{custom_attribute.${items} | first}}', elementId: 'test-filter-array-first' },
+                { input: '{{products | where: "category", "electronics" | size}}', elementId: 'test-filter-array-where' },
+                { input: '{{user.interests | join: ", "}}', elementId: 'test-filter-join' },
+                { input: '{{custom_attribute.${description} | truncate: 100}}', elementId: 'test-filter-truncate' },
+                { input: '{{user.email | md5}}', elementId: 'test-filter-hash' },
+                { input: '{{custom_attribute.${score} | plus: 10 | at_most: 100}}', elementId: 'test-filter-math-limit' },
+                { input: '{{content | strip_html | strip_newlines}}', elementId: 'test-filter-string-clean' },
+                { input: '{{${date_of_birth} | date: "%B %d, %Y"}}', elementId: 'test-filter-date' },
+                
+                // Braze-Specific Tags
+                { input: '{% abort_message() %}', elementId: 'test-abort-empty' },
+                { input: '{% abort_message("language was nil") %}', elementId: 'test-abort-reason' },
+                { input: '{% connected_content http://numbersapi.com/random/trivia :save result %}', elementId: 'test-connected-simple' },
+                { input: '{% connected_content https://api.example.com/data :method post :headers { "Authorization": "Bearer token" } :body campaign={{campaign_name}} :save publication %}', elementId: 'test-connected-complex' },
+                { input: '{% connected_content https://example.com/api :rerender %}', elementId: 'test-connected-rerender' },
+                { input: '{% connected_content [https://example.com/webservice.json] :cache_max_age 900 %}', elementId: 'test-connected-cache' },
+                { input: '{% if result.__http_status_code__ != 200 %}', elementId: 'test-status-code' },
+                { input: '{{event_properties.${message} | json_escape}}', elementId: 'test-json-escape' },
+                { input: '{{${email_address} | url_param_escape}}', elementId: 'test-url-escape' },
+                { input: '{% promotion("vip-deal") %}', elementId: 'test-promotion-quoted' },
+                { input: '{% promotion("SUMMER2024") %}', elementId: 'test-promotion-double-quoted' },
+                
+                // Catalog Patterns
+                { input: '{% catalog_items Games %}', elementId: 'test-catalog-basic' },
+                { input: '{% catalog_items Games 1234 %}', elementId: 'test-catalog-single' },
+                { input: '{% catalog_items games 1234 1235 1236 %}', elementId: 'test-catalog-multiple' },
+                { input: '{% catalog_items Messages greet_msg :rerender %}', elementId: 'test-catalog-rerender' },
+                { input: '{% catalog_selection_items item-list selections %}', elementId: 'test-catalog-selection' },
+                { input: '{{ items[0].title }}', elementId: 'test-catalog-item-title' },
+                { input: '{{ items[0].price }}', elementId: 'test-catalog-item-price' },
+                { input: '{% if items[0].venue_name.size > 10 %}', elementId: 'test-catalog-conditional' },
+                { input: '{% assign wishlist = {{custom_attribute.${wishlist}}} %}', elementId: 'test-catalog-wishlist' },
+                { input: '{% catalog_items Games {{ wishlist[0] }} %}', elementId: 'test-catalog-dynamic' }
+            ];
+
+            testCases.forEach(testCase => {
+                const matches = patternMatcher.findLiquidMatches(testCase.input);
+                const element = document.getElementById(testCase.elementId);
+                
+                if (matches.length > 0) {
+                    element.textContent = matches[0].clean;
+                    element.style.color = '#059669'; // Green for successful processing
+                } else {
+                    element.textContent = 'No matches found';
+                    element.style.color = '#dc2626'; // Red for no matches
+                }
+            });
+            
+            console.log('Test completed. Check results above.');
+        }
+
+        // Run tests when page loads
+        window.addEventListener('load', runTests);
+    </script>
+</body>
+</html> 

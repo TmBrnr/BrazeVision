@@ -63,6 +63,14 @@ class ConfigManager {
     return this.config?.variablePatterns || {};
   }
 
+  getDynamicPatterns() {
+    return this.config?.dynamicPatterns || {};
+  }
+
+  getOperators() {
+    return this.config?.operators || {};
+  }
+
   validateConfig(config) {
     // Basic validation to ensure config has required structure
     const requiredKeys = ['displayModes', 'patterns', 'variables'];
