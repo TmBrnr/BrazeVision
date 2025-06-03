@@ -19,7 +19,6 @@ class StorageManager {
         displayMode: result.liquidDisplayMode || 'friendly'
       };
     } catch (error) {
-      console.log('[StorageManager] Storage not available, using default settings');
       return {
         isEnabled: this.defaultSettings.liquidHighlighterEnabled,
         displayMode: this.defaultSettings.liquidDisplayMode
@@ -30,7 +29,6 @@ class StorageManager {
   async saveUserSettings(settings) {
     try {
       await chrome.storage.sync.set(settings);
-      console.log('[StorageManager] Settings saved:', settings);
       return true;
     } catch (error) {
       console.error('[StorageManager] Failed to save settings:', error);
@@ -71,7 +69,6 @@ class StorageManager {
   async clearUserSettings() {
     try {
       await chrome.storage.sync.clear();
-      console.log('[StorageManager] User settings cleared');
       return true;
     } catch (error) {
       console.error('[StorageManager] Failed to clear settings:', error);

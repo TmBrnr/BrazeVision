@@ -37,15 +37,6 @@ class HighlightRenderer {
     // Add pattern-specific data attribute for CSS targeting
     if (match.pattern) {
       span.dataset.liquidPattern = match.pattern;
-      console.log(`[HighlightRenderer] Applied pattern: "${match.pattern}" to span with classes: "${span.className}"`);
-      console.log(`[HighlightRenderer] Data attributes:`, {
-        pattern: span.dataset.liquidPattern,
-        type: span.dataset.liquidType,
-        mode: span.dataset.liquidMode,
-        importance: span.dataset.liquidImportance
-      });
-    } else {
-      console.log(`[HighlightRenderer] No pattern detected for: "${match.original}"`);
     }
     
     // Enhanced tooltip with hierarchy info
@@ -54,12 +45,6 @@ class HighlightRenderer {
     // Accessibility
     span.setAttribute('role', 'mark');
     span.setAttribute('aria-label', `Liquid ${match.type}: ${match.clean}`);
-    
-    // Force a style recalculation to ensure CSS applies
-    setTimeout(() => {
-      const computedStyle = window.getComputedStyle(span);
-      console.log(`[HighlightRenderer] Final computed background color for "${match.clean}":`, computedStyle.backgroundColor);
-    }, 0);
     
     return span;
   }

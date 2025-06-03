@@ -28,13 +28,13 @@
 </head>
 <body>
   <h1>Liquid Syntax Highlighter Test Page</h1>
-  
+
   <div class="test-section">
     <h3>Complex Content Blocks (The Problem Case)</h3>
     <p>This should preserve the variable name and show the filter:</p>
     <div>{{content_blocks.${code_createSalutation} | id: 'cb1'}}</div>
   </div>
-  
+
   <div class="test-section">
     <h3>Variable with Filters</h3>
     <p>Testing various filter combinations:</p>
@@ -42,7 +42,7 @@
     <div>{{email_address | truncate: 50 | strip}}</div>
     <div>{{products | limit: 5}}</div>
   </div>
-  
+
   <div class="test-section">
     <h3>Complex Variable Paths</h3>
     <p>Testing nested object access:</p>
@@ -50,7 +50,7 @@
     <div>{{product.ProductId}}</div>
     <div>{{content_blocks.header.title}}</div>
   </div>
-  
+
   <div class="test-section">
     <h3>Control Flow Tags</h3>
     <p>Testing loop and conditional statements:</p>
@@ -60,14 +60,14 @@
     <div>{% endif %}</div>
     <div>{% endfor %}</div>
   </div>
-  
+
   <div class="test-section">
     <h3>Catalog Operations</h3>
     <p>Testing data fetching:</p>
     <div>{% catalog_items products {{product}} %}</div>
     <div>{% catalog_items recommendations custom_attribute.${product_ids} %}</div>
   </div>
-  
+
   <div class="test-section">
     <h3>Edge Cases</h3>
     <p>Testing problematic patterns:</p>
@@ -77,13 +77,13 @@
     <div>{{incomplete</div>
     <div>incomplete}}</div>
   </div>
-  
+
   <div class="test-section">
     <h3>Mode Switch Test</h3>
     <p>Try switching between Friendly and Technical modes using the extension popup - the transformations should change!</p>
     <div>{% for product in recommended_products limit: 4 %}</div>
     <div>{{content_blocks.${header_template} | default: "Default Header"}}</div>
-    <div>{% endfor %}</div>
+      <div>{% endfor %}</div>
   </div>
 </body>
 </html> 

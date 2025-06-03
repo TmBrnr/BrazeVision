@@ -19,27 +19,21 @@ class LiquidHighlighter {
 
   async init() {
     try {
-      console.log('[LiquidHighlighter] Initializing...');
-      
       // Step 1: Load configuration
       await this.configManager.loadConfig();
-      console.log('[LiquidHighlighter] Configuration loaded');
       
       // Step 2: Load user settings
       const userSettings = await this.storageManager.getUserSettings();
       this.isEnabled = userSettings.isEnabled;
       this.displayMode = userSettings.displayMode;
-      console.log('[LiquidHighlighter] User settings loaded:', userSettings);
       
       // Step 3: Initialize pattern matching and rendering
       this.patternMatcher = new PatternMatcher(this.configManager);
       this.highlightRenderer = new HighlightRenderer(this.configManager);
       this.highlightRenderer.setDisplayMode(this.displayMode);
-      console.log('[LiquidHighlighter] Pattern matcher and renderer initialized');
       
       // Step 4: Initialize DOM processor
       this.domProcessor = new DOMProcessor(this.patternMatcher, this.highlightRenderer);
-      console.log('[LiquidHighlighter] DOM processor initialized');
       
       // Step 5: Initialize event management
       this.eventManager = new EventManager(this.domProcessor, this.storageManager);
@@ -47,11 +41,9 @@ class LiquidHighlighter {
       // Step 6: Start the system if enabled
       if (this.isEnabled) {
         this.eventManager.initialize();
-        console.log('[LiquidHighlighter] Event manager initialized and started');
       }
       
       this.initialized = true;
-      console.log('[LiquidHighlighter] Initialization complete');
       
       return true;
     } catch (error) {
@@ -91,7 +83,6 @@ class LiquidHighlighter {
     // Refresh highlighting with new mode
     this.eventManager.changeDisplayMode(mode);
     
-    console.log(`[LiquidHighlighter] Changed display mode to: ${mode}`);
     return true;
   }
 
@@ -174,8 +165,6 @@ class LiquidHighlighter {
     const result = fn();
     const duration = performance.now() - start;
     
-    console.log(`[LiquidHighlighter] ${operation} took ${duration.toFixed(2)}ms`);
-    
     if (this.eventManager) {
       this.eventManager.trackPerformance(operation, duration);
     }
@@ -194,7 +183,6 @@ class LiquidHighlighter {
     }
     
     this.initialized = false;
-    console.log('[LiquidHighlighter] Cleanup completed');
   }
 
   // Static method to create and initialize
@@ -246,96 +234,72 @@ class LiquidHighlighter {
 // Global initialization when all modules are loaded
 let liquidHighlighterInstance = null;
 
-// Initialize the highlighter when the page is ready
+// Initialize the highlighter when the content script loads
 async function initializeLiquidHighlighter() {
   try {
-    console.log('[LiquidHighlighter] Starting initialization...');
-    
-    // Check if all required classes are available
-    const requiredClasses = [
-      'ConfigManager', 'StorageManager', 'PatternMatcher',
-      'HighlightRenderer', 'DOMProcessor', 'EventManager'
-    ];
-
-    const missingClasses = requiredClasses.filter(className => typeof window[className] === 'undefined');
-    
-    if (missingClasses.length > 0) {
-      console.error('[LiquidHighlighter] Missing required classes:', missingClasses);
-      return;
+    if (document.readyState === 'loading') {
+      await new Promise(resolve => {
+        document.addEventListener('DOMContentLoaded', resolve, { once: true });
+      });
     }
-
+    
     if (!LiquidHighlighter.isSupported()) {
-      console.error('[LiquidHighlighter] Browser environment not supported');
       return;
     }
 
-    // Create and initialize the highlighter
-    liquidHighlighterInstance = await LiquidHighlighter.create();
+    const highlighter = new LiquidHighlighter();
+    const success = await highlighter.init();
     
-    if (liquidHighlighterInstance) {
-      console.log('[LiquidHighlighter] Successfully initialized');
-      
-      // Make instance globally accessible for debugging
-      window.liquidHighlighter = liquidHighlighterInstance;
-      
-      // Setup popup communication
+    if (success) {
+      window.liquidHighlighter = highlighter;
       setupPopupCommunication();
-    } else {
-      console.error('[LiquidHighlighter] Failed to create highlighter instance');
     }
-    
   } catch (error) {
-    console.error('[LiquidHighlighter] Initialization error:', error);
+    console.error('[LiquidHighlighter] Failed to initialize:', error);
   }
 }
 
 // Setup communication with popup
 function setupPopupCommunication() {
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (!liquidHighlighterInstance) {
+    if (!window.liquidHighlighter) {
       sendResponse({ success: false, error: 'Highlighter not initialized' });
       return;
     }
 
-    console.log('[LiquidHighlighter] Received message:', request);
-    
     switch (request.action) {
       case 'toggle':
-        liquidHighlighterInstance.toggle(request.enabled).then(success => {
-          sendResponse({ success });
-        }).catch(error => {
-          sendResponse({ success: false, error: error.message });
-        });
-        return true; // Keep message channel open for async response
-        
-      case 'getStatus':
-        sendResponse(liquidHighlighterInstance.getStatus());
+        window.liquidHighlighter.toggle(request.enabled)
+          .then(success => sendResponse({ success }))
+          .catch(error => sendResponse({ success: false, error: error.message }));
         break;
-        
-      case 'refresh':
-        const refreshed = liquidHighlighterInstance.refresh();
-        sendResponse({ success: refreshed });
-        break;
-        
+
       case 'changeMode':
-        liquidHighlighterInstance.changeMode(request.mode).then(success => {
-          sendResponse({ success });
-        }).catch(error => {
-          sendResponse({ success: false, error: error.message });
-        });
-        return true; // Keep message channel open for async response
-        
+        window.liquidHighlighter.changeMode(request.mode)
+          .then(success => sendResponse({ success }))
+          .catch(error => sendResponse({ success: false, error: error.message }));
+        break;
+
+      case 'refresh':
+        const refreshSuccess = window.liquidHighlighter.refresh();
+        sendResponse({ success: refreshSuccess });
+        break;
+
+      case 'getStatus':
+        const status = window.liquidHighlighter.getStatus();
+        sendResponse({ success: true, status });
+        break;
+
       case 'diagnose':
-        sendResponse(liquidHighlighterInstance.diagnose());
+        const diagnosis = window.liquidHighlighter.diagnose();
+        sendResponse({ success: true, diagnosis });
         break;
-        
-      case 'debugHighlights':
-        sendResponse(liquidHighlighterInstance.debugHighlights());
-        break;
-        
+
       default:
         sendResponse({ success: false, error: 'Unknown action' });
     }
+
+    return true; // Keep the message channel open for async responses
   });
 }
 

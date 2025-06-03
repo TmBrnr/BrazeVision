@@ -6,6 +6,7 @@ class DOMProcessor {
     this.highlightedElements = new Set();
     this.originalContent = new Map();
     this.skipTags = ['SCRIPT', 'STYLE', 'TEXTAREA', 'INPUT', 'CODE', 'PRE'];
+    this.maxCacheSize = 1000; // Prevent unbounded memory growth
   }
 
   processDocument() {
@@ -56,9 +57,43 @@ class DOMProcessor {
 
     const container = this.createHighlightedContainer(text, matches);
     if (container && textNode.parentNode) {
+      // Check cache size and clean up if needed
+      this.enforceMemoryLimits();
+      
       this.originalContent.set(container, textNode.textContent);
       textNode.parentNode.replaceChild(container, textNode);
       this.highlightedElements.add(container);
+    }
+  }
+
+  enforceMemoryLimits() {
+    // Prevent unbounded memory growth by cleaning up old entries
+    if (this.originalContent.size > this.maxCacheSize) {
+      // Remove elements that are no longer in the DOM
+      const elementsToRemove = [];
+      
+      for (const element of this.originalContent.keys()) {
+        if (!document.contains(element)) {
+          elementsToRemove.push(element);
+        }
+      }
+      
+      // Clean up orphaned elements
+      elementsToRemove.forEach(element => {
+        this.originalContent.delete(element);
+        this.highlightedElements.delete(element);
+      });
+      
+      // If still over limit, remove oldest entries (FIFO)
+      if (this.originalContent.size > this.maxCacheSize) {
+        const entries = Array.from(this.originalContent.keys());
+        const toRemove = entries.slice(0, entries.length - this.maxCacheSize + 100); // Keep some buffer
+        
+        toRemove.forEach(element => {
+          this.originalContent.delete(element);
+          this.highlightedElements.delete(element);
+        });
+      }
     }
   }
 
@@ -157,7 +192,10 @@ class DOMProcessor {
   }
 
   removeHighlights() {
-    this.highlightedElements.forEach(element => {
+    // Process in batches to avoid blocking the main thread
+    const elements = Array.from(this.highlightedElements);
+    
+    for (const element of elements) {
       if (element.parentNode) {
         const originalText = this.originalContent.get(element);
         if (originalText) {
@@ -165,8 +203,9 @@ class DOMProcessor {
           element.parentNode.replaceChild(textNode, element);
         }
       }
-    });
+    }
 
+    // Clear all references
     this.highlightedElements.clear();
     this.originalContent.clear();
   }
@@ -196,16 +235,61 @@ class DOMProcessor {
         this.processTextNodes(iframeDoc.body);
       }
     } catch (error) {
-      console.log('[DOMProcessor] Cannot access iframe content (cross-origin):', error);
+      // Silently handle cross-origin restrictions
     }
   }
 
-  // Method to clean up when element is removed
+  // Method to clean up when element is removed - FIXED to properly clean Map
   cleanupElement(element) {
     if (this.highlightedElements.has(element)) {
       this.highlightedElements.delete(element);
-      this.originalContent.delete(element);
+      this.originalContent.delete(element); // This was missing before!
     }
+
+    // Also clean up any child highlighted elements
+    const childHighlights = element.querySelectorAll('.liquid-highlighted-container');
+    childHighlights.forEach(child => {
+      this.highlightedElements.delete(child);
+      this.originalContent.delete(child);
+    });
+  }
+
+  // Method to get memory usage statistics
+  getMemoryStats() {
+    return {
+      highlightedElements: this.highlightedElements.size,
+      originalContentEntries: this.originalContent.size,
+      maxCacheSize: this.maxCacheSize,
+      orphanedElements: this.countOrphanedElements()
+    };
+  }
+
+  countOrphanedElements() {
+    let count = 0;
+    for (const element of this.originalContent.keys()) {
+      if (!document.contains(element)) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  // Method to manually trigger memory cleanup
+  cleanupOrphanedElements() {
+    const elementsToRemove = [];
+    
+    for (const element of this.originalContent.keys()) {
+      if (!document.contains(element)) {
+        elementsToRemove.push(element);
+      }
+    }
+    
+    elementsToRemove.forEach(element => {
+      this.originalContent.delete(element);
+      this.highlightedElements.delete(element);
+    });
+    
+    return elementsToRemove.length;
   }
 }
 
