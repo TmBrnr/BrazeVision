@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Braze Liquid Highlighter",
   "version": "1.0.0",
-  "description": "Advanced Liquid syntax highlighter with intelligent pattern recognition, filter handling, and ultra-readable transformations. Perfect for Braze email campaigns and dynamic content.",
+  "description": "Liquid syntax highlighter with intelligent pattern recognition, filter handling, and readable transformations.",
   "permissions": [
     "activeTab",
     "storage"

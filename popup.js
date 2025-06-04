@@ -25,32 +25,40 @@ class PopupController {
 
   async loadCurrentState() {
     try {
-      // Get status from active tab
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      const response = await chrome.tabs.sendMessage(tab.id, { action: 'getStatus' });
+      // First try to get from storage (most reliable)
+      const result = await chrome.storage.sync.get(['liquidHighlighterEnabled', 'liquidDisplayMode']);
       
-      this.isEnabled = response.enabled;
-      this.currentMode = response.mode || 'friendly';
-    } catch (error) {
-      console.log('Could not get status from content script:', error);
+      // Set defaults if not found
+      this.isEnabled = result.liquidHighlighterEnabled !== false; // default to true
+      this.currentMode = result.liquidDisplayMode || 'friendly';
       
-      // Fallback to storage
+      // Try to get real-time status from content script as secondary check
       try {
-        const result = await chrome.storage.sync.get(['liquidHighlighterEnabled', 'liquidDisplayMode']);
-        this.isEnabled = result.liquidHighlighterEnabled !== false;
-        this.currentMode = result.liquidDisplayMode || 'friendly';
-      } catch (storageError) {
-        console.log('Could not access storage:', storageError);
-        this.isEnabled = false;
-        this.currentMode = 'friendly';
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        const response = await chrome.tabs.sendMessage(tab.id, { action: 'getStatus' });
+        
+        if (response && typeof response.enabled === 'boolean') {
+          this.isEnabled = response.enabled;
+          this.currentMode = response.mode || this.currentMode;
+        }
+      } catch (contentScriptError) {
+        // Content script not available or not responding - use storage values
+        console.log('Content script not available, using storage values');
       }
+      
+    } catch (error) {
+      console.error('Failed to load state:', error);
+      // Use safe defaults
+      this.isEnabled = true;
+      this.currentMode = 'friendly';
     }
   }
 
   setupEventListeners() {
     // Toggle switch
     const toggleSwitch = document.getElementById('toggleSwitch');
-    toggleSwitch.addEventListener('click', () => {
+    toggleSwitch.addEventListener('click', (e) => {
+      e.preventDefault();
       this.toggleHighlighting();
     });
 
@@ -71,47 +79,63 @@ class PopupController {
   }
 
   async toggleHighlighting() {
-    this.isEnabled = !this.isEnabled;
+    const newState = !this.isEnabled;
     
     try {
-      // Send message to all frames
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      await chrome.tabs.sendMessage(tab.id, { 
-        action: 'toggle', 
-        enabled: this.isEnabled 
-      });
+      // Update storage first
+      await chrome.storage.sync.set({ liquidHighlighterEnabled: newState });
       
-      // Also save to storage for persistence
-      await chrome.storage.sync.set({ liquidHighlighterEnabled: this.isEnabled });
+      // Then try to notify content script
+      try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        await chrome.tabs.sendMessage(tab.id, { 
+          action: 'toggle', 
+          enabled: newState 
+        });
+      } catch (contentScriptError) {
+        console.log('Could not notify content script:', contentScriptError);
+        // This is okay - the content script will read from storage when needed
+      }
       
+      // Update local state and UI
+      this.isEnabled = newState;
       this.updateUI();
+      
     } catch (error) {
       console.error('Failed to toggle highlighting:', error);
-      // Revert on error
-      this.isEnabled = !this.isEnabled;
-      this.updateUI();
+      // Show error feedback
+      this.showError('Failed to toggle highlighting');
     }
   }
 
   async changeMode(mode) {
     if (mode === this.currentMode) return;
     
+    const oldMode = this.currentMode;
     this.currentMode = mode;
     
     try {
-      // Send message to content script
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      await chrome.tabs.sendMessage(tab.id, { 
-        action: 'changeMode', 
-        mode: mode 
-      });
-      
-      // Save to storage
+      // Update storage first
       await chrome.storage.sync.set({ liquidDisplayMode: mode });
       
+      // Try to notify content script
+      try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        await chrome.tabs.sendMessage(tab.id, { 
+          action: 'changeMode', 
+          mode: mode 
+        });
+      } catch (contentScriptError) {
+        console.log('Could not notify content script:', contentScriptError);
+      }
+      
       this.updateUI();
+      
     } catch (error) {
       console.error('Failed to change mode:', error);
+      // Revert on error
+      this.currentMode = oldMode;
+      this.updateUI();
     }
   }
 
@@ -141,6 +165,18 @@ class PopupController {
         refreshButton.classList.remove('loading');
       }, 1000);
     }
+  }
+
+  showError(message) {
+    const statusText = document.getElementById('statusText');
+    const originalText = statusText.textContent;
+    statusText.textContent = message;
+    statusText.style.color = '#dc2626';
+    
+    setTimeout(() => {
+      statusText.textContent = originalText;
+      statusText.style.color = '';
+    }, 2000);
   }
 
   updateUI() {
