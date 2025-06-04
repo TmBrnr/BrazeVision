@@ -235,7 +235,13 @@
 /* Loop patterns - Amber */
 .liquid-highlight.liquid-tag[data-liquid-pattern="forLoopComplex"],
 .liquid-highlight.liquid-tag[data-liquid-pattern="forLoopSimple"],
-.liquid-highlight.liquid-tag[data-liquid-pattern="endfor"] {
+.liquid-highlight.liquid-tag[data-liquid-pattern="endfor"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-tag[data-liquid-pattern="forLoopComplex"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-tag[data-liquid-pattern="forLoopSimple"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-tag[data-liquid-pattern="endfor"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-tag[data-liquid-pattern="forLoopComplex"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-tag[data-liquid-pattern="forLoopSimple"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-tag[data-liquid-pattern="endfor"] {
   background-color: rgba(245, 158, 11, 0.12) !important;
   color: #d97706 !important;
   border-color: rgba(245, 158, 11, 0.2) !important;
@@ -250,7 +256,25 @@
 .liquid-highlight.liquid-tag[data-liquid-pattern="endunless"],
 .liquid-highlight.liquid-tag[data-liquid-pattern="case"],
 .liquid-highlight.liquid-tag[data-liquid-pattern="when"],
-.liquid-highlight.liquid-tag[data-liquid-pattern="endcase"] {
+.liquid-highlight.liquid-tag[data-liquid-pattern="endcase"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-tag[data-liquid-pattern="ifStatement"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-tag[data-liquid-pattern="endif"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-tag[data-liquid-pattern="else"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-tag[data-liquid-pattern="elseif"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-tag[data-liquid-pattern="unless"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-tag[data-liquid-pattern="endunless"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-tag[data-liquid-pattern="case"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-tag[data-liquid-pattern="when"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-tag[data-liquid-pattern="endcase"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-tag[data-liquid-pattern="ifStatement"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-tag[data-liquid-pattern="endif"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-tag[data-liquid-pattern="else"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-tag[data-liquid-pattern="elseif"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-tag[data-liquid-pattern="unless"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-tag[data-liquid-pattern="endunless"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-tag[data-liquid-pattern="case"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-tag[data-liquid-pattern="when"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-tag[data-liquid-pattern="endcase"] {
   background-color: rgba(239, 68, 68, 0.12) !important;
   color: #dc2626 !important;
   border-color: rgba(239, 68, 68, 0.2) !important;
@@ -259,7 +283,13 @@
 /* Assignment patterns - Green */
 .liquid-highlight.liquid-tag[data-liquid-pattern="assignment"],
 .liquid-highlight.liquid-tag[data-liquid-pattern="capture"],
-.liquid-highlight.liquid-tag[data-liquid-pattern="endcapture"] {
+.liquid-highlight.liquid-tag[data-liquid-pattern="endcapture"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-tag[data-liquid-pattern="assignment"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-tag[data-liquid-pattern="capture"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-tag[data-liquid-pattern="endcapture"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-tag[data-liquid-pattern="assignment"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-tag[data-liquid-pattern="capture"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-tag[data-liquid-pattern="endcapture"] {
   background-color: rgba(16, 185, 129, 0.12) !important;
   color: #047857 !important;
   border-color: rgba(16, 185, 129, 0.2) !important;
@@ -268,7 +298,13 @@
 /* Data fetch patterns - Blue */
 .liquid-highlight.liquid-tag[data-liquid-pattern="catalogItems"],
 .liquid-highlight.liquid-tag[data-liquid-pattern="fetch"],
-.liquid-highlight.liquid-tag[data-liquid-pattern="api"] {
+.liquid-highlight.liquid-tag[data-liquid-pattern="api"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-tag[data-liquid-pattern="catalogItems"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-tag[data-liquid-pattern="fetch"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-tag[data-liquid-pattern="api"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-tag[data-liquid-pattern="catalogItems"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-tag[data-liquid-pattern="fetch"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-tag[data-liquid-pattern="api"] {
   background-color: rgba(99, 102, 241, 0.12) !important;
   color: #4338ca !important;
   border-color: rgba(99, 102, 241, 0.2) !important;
@@ -276,7 +312,11 @@
 
 /* Include patterns - Pink */
 .liquid-highlight.liquid-tag[data-liquid-pattern="include"],
-.liquid-highlight.liquid-tag[data-liquid-pattern="render"] {
+.liquid-highlight.liquid-tag[data-liquid-pattern="render"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-tag[data-liquid-pattern="include"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-tag[data-liquid-pattern="render"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-tag[data-liquid-pattern="include"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-tag[data-liquid-pattern="render"] {
   background-color: rgba(236, 72, 153, 0.12) !important;
   color: #be185d !important;
   border-color: rgba(236, 72, 153, 0.2) !important;
@@ -284,20 +324,68 @@
 
 /* Comment patterns - Purple (default tag color) */
 .liquid-highlight.liquid-tag[data-liquid-pattern="comment"],
-.liquid-highlight.liquid-tag[data-liquid-pattern="endcomment"] {
+.liquid-highlight.liquid-tag[data-liquid-pattern="endcomment"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-tag[data-liquid-pattern="comment"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-tag[data-liquid-pattern="endcomment"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-tag[data-liquid-pattern="comment"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-tag[data-liquid-pattern="endcomment"] {
   background-color: rgba(139, 92, 246, 0.12) !important;
   color: #6d28d9 !important;
   border-color: rgba(139, 92, 246, 0.2) !important;
 }
 
-/* Variable output patterns - keep original green but make distinct */
+/* Variable output patterns - GREEN for all variables and user data */
 .liquid-highlight.liquid-output[data-liquid-pattern="variable"],
 .liquid-highlight.liquid-output[data-liquid-pattern="customAttribute"],
 .liquid-highlight.liquid-output[data-liquid-pattern="emailAddress"],
 .liquid-highlight.liquid-output[data-liquid-pattern="firstName"],
 .liquid-highlight.liquid-output[data-liquid-pattern="lastName"],
 .liquid-highlight.liquid-output[data-liquid-pattern="userId"],
-.liquid-highlight.liquid-output[data-liquid-pattern="userName"] {
+.liquid-highlight.liquid-output[data-liquid-pattern="userName"],
+.liquid-highlight.liquid-output[data-liquid-pattern="brazeStandardVar"],
+.liquid-highlight.liquid-output[data-liquid-pattern="brazeNestedObject"],
+.liquid-highlight.liquid-output[data-liquid-pattern="brazeObjectProperty"],
+.liquid-highlight.liquid-output[data-liquid-pattern="brazeSubscriptionState"],
+.liquid-highlight.liquid-output[data-liquid-pattern="brazeDeviceAttribute"],
+.liquid-highlight.liquid-output[data-liquid-pattern="brazeCampaignAttribute"],
+.liquid-highlight.liquid-output[data-liquid-pattern="brazeEventProperty"],
+.liquid-highlight.liquid-output[data-liquid-pattern="brazeMessageProperty"],
+.liquid-highlight.liquid-output[data-liquid-pattern="brazeAppProperty"],
+.liquid-highlight.liquid-output[data-liquid-pattern="brazeCustomAttribute"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-output[data-liquid-pattern="variable"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-output[data-liquid-pattern="customAttribute"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-output[data-liquid-pattern="emailAddress"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-output[data-liquid-pattern="firstName"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-output[data-liquid-pattern="lastName"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-output[data-liquid-pattern="userId"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-output[data-liquid-pattern="userName"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-output[data-liquid-pattern="brazeStandardVar"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-output[data-liquid-pattern="brazeNestedObject"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-output[data-liquid-pattern="brazeObjectProperty"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-output[data-liquid-pattern="brazeSubscriptionState"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-output[data-liquid-pattern="brazeDeviceAttribute"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-output[data-liquid-pattern="brazeCampaignAttribute"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-output[data-liquid-pattern="brazeEventProperty"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-output[data-liquid-pattern="brazeMessageProperty"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-output[data-liquid-pattern="brazeAppProperty"],
+[data-liquid-mode="friendly"] .liquid-highlight.liquid-output[data-liquid-pattern="brazeCustomAttribute"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-output[data-liquid-pattern="variable"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-output[data-liquid-pattern="customAttribute"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-output[data-liquid-pattern="emailAddress"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-output[data-liquid-pattern="firstName"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-output[data-liquid-pattern="lastName"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-output[data-liquid-pattern="userId"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-output[data-liquid-pattern="userName"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-output[data-liquid-pattern="brazeStandardVar"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-output[data-liquid-pattern="brazeNestedObject"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-output[data-liquid-pattern="brazeObjectProperty"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-output[data-liquid-pattern="brazeSubscriptionState"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-output[data-liquid-pattern="brazeDeviceAttribute"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-output[data-liquid-pattern="brazeCampaignAttribute"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-output[data-liquid-pattern="brazeEventProperty"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-output[data-liquid-pattern="brazeMessageProperty"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-output[data-liquid-pattern="brazeAppProperty"],
+[data-liquid-mode="technical"] .liquid-highlight.liquid-output[data-liquid-pattern="brazeCustomAttribute"] {
   background-color: rgba(16, 185, 129, 0.12) !important;
   color: #047857 !important;
   border-color: rgba(16, 185, 129, 0.2) !important;
@@ -400,7 +488,17 @@
   .liquid-highlight.liquid-output[data-liquid-pattern="firstName"],
   .liquid-highlight.liquid-output[data-liquid-pattern="lastName"],
   .liquid-highlight.liquid-output[data-liquid-pattern="userId"],
-  .liquid-highlight.liquid-output[data-liquid-pattern="userName"] {
+  .liquid-highlight.liquid-output[data-liquid-pattern="userName"],
+  .liquid-highlight.liquid-output[data-liquid-pattern="brazeStandardVar"],
+  .liquid-highlight.liquid-output[data-liquid-pattern="brazeNestedObject"],
+  .liquid-highlight.liquid-output[data-liquid-pattern="brazeObjectProperty"],
+  .liquid-highlight.liquid-output[data-liquid-pattern="brazeSubscriptionState"],
+  .liquid-highlight.liquid-output[data-liquid-pattern="brazeDeviceAttribute"],
+  .liquid-highlight.liquid-output[data-liquid-pattern="brazeCampaignAttribute"],
+  .liquid-highlight.liquid-output[data-liquid-pattern="brazeEventProperty"],
+  .liquid-highlight.liquid-output[data-liquid-pattern="brazeMessageProperty"],
+  .liquid-highlight.liquid-output[data-liquid-pattern="brazeAppProperty"],
+  .liquid-highlight.liquid-output[data-liquid-pattern="brazeCustomAttribute"] {
     background-color: rgba(16, 185, 129, 0.2) !important;
     color: #34d399 !important;
     border-color: rgba(16, 185, 129, 0.4) !important;
