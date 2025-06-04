@@ -10,7 +10,7 @@ class PatternMatcher {
         className: 'liquid-output'
       },
       {
-        regex: /\{%\s*([^%]+?)\s*%\}/g,
+        regex: /\{%\s*((?:[^%]|%(?!\s*\}))*?)\s*%\}/g,
         type: 'tag', 
         className: 'liquid-tag'
       }
@@ -412,22 +412,40 @@ class PatternMatcher {
       return content;
     }
     
+    let result = content;
+    
+    // Handle complex assignment values with filters first
+    // Pattern: {{object.${property}}} | filter: "args"
+    const complexWithFilterPattern = /\{\{([^}]+\.\$\{[^}]+\}[^}]*)\}\}\s*\|\s*([^|]+)/g;
+    result = result.replace(complexWithFilterPattern, (match, innerContent, filterPart) => {
+      const transformedVariable = this.transformOutputContent(innerContent);
+      const transformedFilter = this.transformFilter(filterPart.trim());
+      return `${transformedVariable} (${transformedFilter})`;
+    });
+    
     // Handle the special case {{${variable}}} - direct variable reference
     const directVarPattern = /\{\{\$\{([^}]+)\}\}\}/g;
-    let result = content.replace(directVarPattern, (match, variable) => {
-      // Convert variable to friendly format
+    result = result.replace(directVarPattern, (match, variable) => {
       const friendlyVar = this.createSimpleDescription(variable);
       return friendlyVar;
     });
     
-    // Handle the common case: {{custom_attribute.${variable}}}
+    // Handle the common case: {{custom_attribute.${variable}}} (without filters already handled above)
     const commonPattern = /\{\{([^}]+\$\{[^}]+\}[^}]*)\}\}/g;
     result = result.replace(commonPattern, (match, innerContent) => {
       const transformed = this.transformOutputContent(innerContent);
       return transformed;
     });
     
-    // Handle any remaining {{...}} patterns (without ${} inside)
+    // Handle any remaining {{...}} patterns (without ${} inside) with filters
+    const simpleWithFilterPattern = /\{\{([^{}]+)\}\}\s*\|\s*([^|]+)/g;
+    result = result.replace(simpleWithFilterPattern, (match, innerContent, filterPart) => {
+      const transformedVariable = this.transformOutputContent(innerContent);
+      const transformedFilter = this.transformFilter(filterPart.trim());
+      return `${transformedVariable} (${transformedFilter})`;
+    });
+    
+    // Handle any remaining {{...}} patterns (without ${} inside and without filters)
     result = result.replace(/\{\{([^{}]+)\}\}/g, (match, innerContent) => {
       const transformed = this.transformOutputContent(innerContent);
       return transformed;
@@ -435,7 +453,14 @@ class PatternMatcher {
     
     // Handle standalone ${variable} syntax - convert to just the variable name
     result = result.replace(/\$\{([^}]+)\}/g, (match, variable) => {
-      return variable;
+      return this.createSimpleDescription(variable);
+    });
+    
+    // Handle remaining filters that weren't caught by the patterns above
+    const remainingFilterPattern = /\|\s*([^|]+)/g;
+    result = result.replace(remainingFilterPattern, (match, filterPart) => {
+      const transformedFilter = this.transformFilter(filterPart.trim());
+      return ` (${transformedFilter})`;
     });
     
     return result;
@@ -801,14 +826,52 @@ class PatternMatcher {
     matches.sort((a, b) => a.start - b.start);
     
     const resolved = [];
-    let lastEnd = 0;
     
     for (const match of matches) {
-      if (match.start >= lastEnd) {
+      let shouldAdd = true;
+      
+      // Check if this match overlaps with any already resolved matches
+      for (let i = resolved.length - 1; i >= 0; i--) {
+        const existing = resolved[i];
+        
+        // Check for overlap
+        if (match.start < existing.end && match.end > existing.start) {
+          // Overlap detected - decide which one to keep
+          
+          // Priority 1: Keep tag matches over output matches (outer syntax over inner)
+          if (match.type === 'tag' && existing.type === 'output') {
+            // Remove the existing output match and add the tag match
+            resolved.splice(i, 1);
+            continue;
+          } else if (match.type === 'output' && existing.type === 'tag') {
+            // Keep the existing tag match, skip this output match
+            shouldAdd = false;
+            break;
+          }
+          
+          // Priority 2: Keep longer matches (more comprehensive)
+          const matchLength = match.end - match.start;
+          const existingLength = existing.end - existing.start;
+          
+          if (matchLength > existingLength) {
+            // This match is longer, replace the existing one
+            resolved.splice(i, 1);
+            continue;
+          } else {
+            // Existing match is longer or equal, skip this one
+            shouldAdd = false;
+            break;
+          }
+        }
+      }
+      
+      if (shouldAdd) {
         resolved.push(match);
-        lastEnd = match.end;
       }
     }
+    
+    // Sort by start position again after resolution
+    resolved.sort((a, b) => a.start - b.start);
     
     return resolved;
   }
