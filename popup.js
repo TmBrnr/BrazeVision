@@ -6,12 +6,12 @@ class PopupController {
     this.currentMode = 'friendly';
     this.modeExamples = {
       friendly: {
-        text: 'Loop through user data (show 3 products)',
-        description: 'Readable with some technical context'
+        text: 'Loop through products from favorite category (show 5 items)',
+        description: 'Natural language with comprehensive cleanup of all ${}, {{}} and dot notation'
       },
       technical: {
-        text: 'for product in custom_attribute.cart.Products limit:3',
-        description: 'Clean original syntax for developers'
+        text: 'for product in catalog_items.${custom_attribute.${favorite_category}} limit:{{ event_properties.${max_items} | default: 5 }}',
+        description: 'Original Liquid syntax preserved exactly as written'
       }
     };
     this.init();
@@ -198,9 +198,9 @@ class PopupController {
   updateStatusText() {
     const statusText = document.getElementById('statusText');
     if (this.isEnabled) {
-      statusText.textContent = 'Active - transforming liquid syntax';
+      statusText.textContent = 'Active - comprehensive pattern matching & cleanup';
     } else {
-      statusText.textContent = 'Disabled - click to enable';
+      statusText.textContent = 'Disabled - click to enable advanced parsing';
     }
   }
 

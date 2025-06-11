@@ -314,13 +314,15 @@
       .footer {
         color: #6b7280;
       }
+
+
     }
   </style>
 </head>
 <body>
   <div class="header">
     <h1>Braze Vision</h1>
-    <p>Liquid templating</p>
+    <p>Advanced Liquid pattern matching & cleanup</p>
   </div>
 
   <div class="section">
@@ -340,36 +342,36 @@
       <div class="mode-option" data-mode="technical">Technical</div>
     </div>
     <div class="mode-example" id="modeExample">
-      {{${email_address}}} → "Email address"
+      products from custom favorite category (default: 5)
     </div>
   </div>
 
   <div class="color-legend">
-    <div class="color-legend-title">Highlighting Legend</div>
+    <div class="color-legend-title">Pattern Detection</div>
     <div class="color-examples">
       <div class="color-example">
         <div class="color-dot dot-green"></div>
-        <span>Variables & User Data</span>
+        <span>Variables & Output</span>
       </div>
       <div class="color-example">
         <div class="color-dot dot-amber"></div>
-        <span>Loops & Iteration</span>
+        <span>Loops & For</span>
       </div>
       <div class="color-example">
         <div class="color-dot dot-red"></div>
-        <span>Conditional Logic</span>
+        <span>If/Unless Logic</span>
       </div>
       <div class="color-example">
         <div class="color-dot dot-blue"></div>
-        <span>Data Fetch</span>
+        <span>Catalog & Data</span>
       </div>
       <div class="color-example">
         <div class="color-dot dot-pink"></div>
-        <span>Includes & Templates</span>
+        <span>Connected Content</span>
       </div>
       <div class="color-example">
         <div class="color-dot dot-purple"></div>
-        <span>Comments</span>
+        <span>Assignment & Capture</span>
       </div>
     </div>
   </div>
@@ -379,12 +381,12 @@
       <span>Refresh</span>
     </button>
     <div class="refresh-text">
-      Manual refresh after content changes
+      Re-analyze page with updated patterns
     </div>
   </div>
 
   <div class="footer">
-    <p>v1.0.0 - Braze Vision</p>
+    <p>v1.1.0 - Braze Vision</p>
   </div>
 
   <script src="popup.js"></script>

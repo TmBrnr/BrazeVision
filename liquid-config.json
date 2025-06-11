@@ -82,7 +82,7 @@
     },
     
     "catalogItems": {
-      "regex": "catalog_items\\s+(\\w+)\\s+(.+)",
+      "regex": "catalog_items\\s+((?:\\{\\{[^}]+\\}\\}|\\w+))\\s+(.+)",
       "friendly": "Get {catalog_name} data: {items}",
       "technical": "catalog_items {catalog_name} {items}",
       "placeholderMap": {
@@ -206,7 +206,7 @@
     
     "when": {
       "regex": "when\\s+(.+)",
-      "friendly": "When equals: {value}",
+      "friendly": "When value is: {value}",
       "technical": "when {value}",
       "placeholderMap": {
         "value": 1
@@ -221,113 +221,50 @@
     
     "comment": {
       "regex": "comment",
-      "friendly": "Hidden note starts",
+      "friendly": "Start comment",
       "technical": "comment"
     },
     
     "endcomment": {
       "regex": "endcomment", 
-      "friendly": "Hidden note ends",
+      "friendly": "End comment",
       "technical": "endcomment"
     },
     
     "abortMessage": {
-      "regex": "abort_message\\(\\s*['\"]([^'\"]*)['\"]\\s*\\)",
-      "friendly": "Stop message with reason: {reason}",
-      "technical": "abort_message('{reason}')",
+      "regex": "abort_message\\((.*)\\)",
+      "friendly": "Stop message: {reason}",
+      "technical": "abort_message({reason})",
       "placeholderMap": {
         "reason": 1
-      },
-      "priority": 1
+      }
     },
     
-    "abortMessageEmpty": {
-      "regex": "abort_message\\(\\s*\\)",
-      "friendly": "Stop message delivery",
-      "technical": "abort_message()",
-      "priority": 2
-    },
-    
-    "promotionWithQuotes": {
-      "regex": "promotion\\(\\s*['\"]([^'\"]+)['\"]\\s*\\)",
-      "friendly": "Apply promotion code: {code}",
-      "technical": "promotion('{code}')",
+    "promotion": {
+      "regex": "promotion\\s+(\\w+)",
+      "friendly": "Apply promotion: {promo_name}",
+      "technical": "promotion {promo_name}",
       "placeholderMap": {
-        "code": 1
-      },
-      "priority": 1
+        "promo_name": 1
+      }
     },
     
-    "promotionWithoutQuotes": {
-      "regex": "promotion\\(\\s*([^)]+)\\s*\\)",
-      "friendly": "Apply promotion code: {code}",
-      "technical": "promotion({code})",
-      "placeholderMap": {
-        "code": 1
-      },
-      "priority": 2
-    },
-    
-    "connectedContentComplex": {
-      "regex": "connected_content\\s+(https?://[^\\s]+)(?:\\s+:method\\s+(\\w+))?(?:\\s+:headers\\s+\\{[^}]*\\})?(?:\\s+:body\\s+([^:]+?))?(?:\\s+:content_type\\s+(\\w+/\\w+))?(?:\\s+:save\\s+(\\w+))?(?:\\s+:cache_max_age\\s+(\\d+))?(?:\\s+:retry)?(?:\\s+:basic_auth\\s+(\\w+))?(?:\\s+:rerender)?",
-      "friendly": "Fetch data from {url} and save as {variable}",
-      "technical": "connected_content {url} :save {variable}",
-      "placeholderMap": {
-        "url": 1,
-        "method": 2,
-        "body": 3,
-        "content_type": 4,
-        "variable": 5,
-        "cache_age": 6,
-        "auth": 7
-      },
-      "defaults": {
-        "variable": "result",
-        "method": "GET"
-      },
-      "priority": 1
-    },
-    
-    "connectedContentSimple": {
-      "regex": "connected_content\\s+(https?://[^\\s]+)\\s+:save\\s+(\\w+)",
-      "friendly": "Fetch data from {url} and save as {variable}",
-      "technical": "connected_content {url} :save {variable}",
-      "placeholderMap": {
-        "url": 1,
-        "variable": 2
-      },
-      "priority": 2
-    },
-    
-    "connectedContentBasic": {
-      "regex": "connected_content\\s+(https?://[^\\s]+)",
-      "friendly": "Fetch and display data from {url}",
+    "connectedContent": {
+      "regex": "connected_content\\s+(.+)",
+      "friendly": "Fetch external data: {url}",
       "technical": "connected_content {url}",
       "placeholderMap": {
         "url": 1
-      },
-      "priority": 3
+      }
     },
     
-    "connectedContentWithRerender": {
-      "regex": "connected_content\\s+(https?://[^\\s]+)\\s+:rerender",
-      "friendly": "Fetch and re-process data from {url}",
-      "technical": "connected_content {url} :rerender",
+    "render": {
+      "regex": "render\\s+['\"]([^'\"]+)['\"]",
+      "friendly": "Render template: {template}",
+      "technical": "render '{template}'",
       "placeholderMap": {
-        "url": 1
-      },
-      "priority": 2
-    },
-    
-    "connectedContentWithCache": {
-      "regex": "connected_content\\s+(\\[[^\\]]+\\])\\s+:cache_max_age\\s+(\\d+)",
-      "friendly": "Fetch cached data from {url} (cache {cache_time} seconds)",
-      "technical": "connected_content {url} :cache_max_age {cache_time}",
-      "placeholderMap": {
-        "url": 1,
-        "cache_time": 2
-      },
-      "priority": 2
+        "template": 1
+      }
     }
   },
   
@@ -1297,5 +1234,202 @@
       "description": "WhatsApp message property",
       "category": "whatsapp"
     }
+  },
+
+  "fallbackTagPatterns": {
+    "forLoopSimple": "\\bfor\\s+\\w+\\s+in\\s+",
+    "endfor": "\\bendfor\\b",
+    
+    "ifStatement": "\\bif\\s+",
+    "endif": "\\bendif\\b",
+    "else": "\\belse\\b",
+    "elseif": "\\belseif\\s+",
+    "unless": "\\bunless\\s+",
+    "endunless": "\\bendunless\\b",
+    "case": "\\bcase\\s+",
+    "when": "\\bwhen\\s+",
+    "endcase": "\\bendcase\\b",
+    
+    "assignment": "\\bassign\\s+\\w+\\s*=",
+    "capture": "\\bcapture\\s+",
+    "endcapture": "\\bendcapture\\b",
+    
+    "catalogItems": "\\bcatalog_items\\b",
+    "catalogSelectionItems": "\\bcatalog_selection_items\\b",
+    "connectedContent": "\\bconnected_content\\b",
+    "fetch": "\\bfetch\\s+",
+    "api": "\\bapi\\s+",
+    
+    "abortMessage": "\\babort_message\\b",
+    "promotion": "\\bpromotion\\b",
+    
+    "include": "\\binclude\\s+",
+    "render": "\\brender\\s+",
+    
+    "comment": "\\bcomment\\b",
+    "endcomment": "\\bendcomment\\b"
+  },
+
+  "outputPatterns": {
+    "brazeStandardVar": "^\\$\\{([^}]+)\\}$",
+    "brazeNestedObject": "^([a-zA-Z_][a-zA-Z0-9_]*)\\.\\$\\{([^}]+)\\}$",
+    "brazeObjectProperty": "^([a-zA-Z_][a-zA-Z0-9_]*\\.)+[a-zA-Z_][a-zA-Z0-9_]*$",
+    "brazeSubscriptionState": "^subscribed_state\\.\\$\\{([^}]+)\\}$",
+    "brazeDeviceAttribute": "^(most_recently_used_device|targeted_device)\\.\\$\\{([^}]+)\\}$",
+    "brazeCampaignAttribute": "^(campaign|canvas|card)\\.\\$\\{([^}]+)\\}$",
+    "brazeEventProperty": "^event_properties\\.\\$\\{([^}]+)\\}$",
+    "brazeMessageProperty": "^(sms|whats_app)\\.\\$\\{([^}]+)\\}$",
+    "brazeAppProperty": "^app\\.\\$\\{([^}]+)\\}$",
+    "brazeCustomAttribute": "^custom_attribute\\.\\$\\{([^}]+)\\}$",
+    
+    "customAttribute": "custom_attribute",
+    "emailAddress": "email_address",
+    "firstName": "first_name",
+    "lastName": "last_name",
+    "userId": "user_id",
+    "userName": "user_name",
+    "product": "\\bproduct\\b(?!\\s*s)",
+    "products": "\\bproducts\\b",
+    "contentBlocks": "content_blocks",
+    "recommendedProducts": "recommended_products",
+    "campaignName": "campaign\\.name",
+    "canvasName": "canvas\\.name",
+    "deviceCarrier": "(most_recently_used_device|targeted_device)\\.carrier",
+    "deviceModel": "(most_recently_used_device|targeted_device)\\.model",
+    "variable": "^\\w+$"
+  },
+
+  "fallbackTransformations": {
+    "friendly": [
+      {
+        "regex": "^for\\s+(\\w+)\\s+in\\s+(.+?)(?:\\s+limit:\\s*(\\d+))?$",
+        "template": "Loop through {2} (show {3} items)",
+        "defaults": { "3": "all" }
+      },
+      {
+        "regex": "^if\\s+(.+)$",
+        "template": "Display when: {1}"
+      },
+      {
+        "regex": "^unless\\s+(.+)$",
+        "template": "Hide when: {1}"
+      },
+      {
+        "regex": "^assign\\s+(\\w+)\\s*=\\s*(.+)$",
+        "template": "Create variable: {1} = {2}"
+      },
+      {
+        "regex": "^include\\s+['\"]?([^'\"]+)['\"]?$",
+        "template": "Include template: {1}"
+      },
+      {
+        "regex": "^catalog_items\\s+(\\w+)\\s+(.+)$",
+        "template": "Fetch {1}: {2}"
+      }
+    ],
+    "technical": [
+      {
+        "regex": "^for\\s+(\\w+)\\s+in\\s+(.+?)(?:\\s+limit:\\s*(\\d+))?$",
+        "template": "for {1} in {2} limit:{3}",
+        "defaults": { "3": "" }
+      },
+      {
+        "regex": "^if\\s+(.+)$",
+        "template": "if {1}"
+      },
+      {
+        "regex": "^unless\\s+(.+)$", 
+        "template": "unless {1}"
+      },
+      {
+        "regex": "^assign\\s+(\\w+)\\s*=\\s*(.+)$",
+        "template": "assign {1} = {2}"
+      },
+      {
+        "regex": "^include\\s+['\"]?([^'\"]+)['\"]?$",
+        "template": "include '{1}'"
+      },
+      {
+        "regex": "^catalog_items\\s+(\\w+)\\s+(.+)$",
+        "template": "catalog_items {1} {2}"
+      }
+    ]
+  },
+
+  "fallbackFilterDescriptions": {
+    "id": {
+      "withArgs": "ID: {0}",
+      "withoutArgs": "with ID"
+    },
+    "default": {
+      "withArgs": "default: {0}",
+      "withoutArgs": "with default value"
+    },
+    "capitalize": {
+      "withoutArgs": "capitalized"
+    },
+    "upcase": {
+      "withoutArgs": "uppercase"
+    },
+    "downcase": {
+      "withoutArgs": "lowercase"
+    },
+    "truncate": {
+      "withArgs": "truncated to {0} characters",
+      "withoutArgs": "truncated"
+    },
+    "limit": {
+      "withArgs": "limited to {0} items",
+      "withoutArgs": "limited"
+    },
+    "strip": {
+      "withoutArgs": "whitespace removed"
+    },
+    "escape": {
+      "withoutArgs": "HTML escaped"
+    },
+    "join": {
+      "withArgs": "joined with {0}",
+      "withoutArgs": "joined"
+    },
+    "split": {
+      "withArgs": "split by {0}",
+      "withoutArgs": "split"
+    },
+    "replace": {
+      "withArgs": "replace {0} with {1}",
+      "withoutArgs": "replaced"
+    },
+    "remove": {
+      "withArgs": "remove {0}",
+      "withoutArgs": "removed"
+    },
+    "append": {
+      "withArgs": "append {0}",
+      "withoutArgs": "appended"
+    },
+    "prepend": {
+      "withArgs": "prepend {0}",
+      "withoutArgs": "prepended"
+    }
+  },
+
+  "commonVariableMappings": {
+    "membership_level": "membership level",
+    "max_display": "max display",
+    "shopping_cart": "shopping cart",
+    "total_points": "total points",
+    "bonus_points": "bonus points",
+    "email_global": "email global",
+    "inbound_message_body": "inbound message body",
+    "variant_name": "variant name",
+    "geofence_name": "geofence name",
+    "user_preferences": "user preferences",
+    "ad_tracking_enabled": "ad tracking enabled",
+    "foreground_push_enabled": "foreground push enabled",
+    "inbound_media_urls": "inbound media urls",
+    "preferred_category": "preferred category",
+    "api_id": "API ID",
+    "most_recent_locale": "most recent locale"
   }
 } 
