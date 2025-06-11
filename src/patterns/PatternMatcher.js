@@ -58,154 +58,67 @@ class PatternMatcher {
     return this.resolveOverlaps(allMatches);
   }
 
-  identifyTagPattern(content) {
-    const patterns = this.configManager.getPatterns();
-    if (!patterns) return null;
+  // Generic pattern matching function to eliminate duplication
+  findBestMatch(content, patterns, fallbackPatterns = null) {
+    const cleanContent = content.replace(/\s+/g, ' ').trim();
     
-    // Clean up the content - remove extra whitespace but preserve structure
-    let cleanContent = content.replace(/\s+/g, ' ').trim();
-    
-    // Sort patterns by priority to match complex patterns first
-    const sortedPatterns = Object.entries(patterns)
-      .sort(([, a], [, b]) => (a.priority || 999) - (b.priority || 999));
-
-    for (const [patternName, pattern] of sortedPatterns) {
+    // Try main patterns first (already sorted by priority)
+    for (const pattern of patterns) {
       try {
-        // Make regex case-insensitive and allow for flexible whitespace
-        const flags = 'i';
-        const flexibleRegex = pattern.regex.replace(/\\s\+/g, '\\s*').replace(/\\s\*/g, '\\s*');
-        const regex = new RegExp(flexibleRegex, flags);
-        
-        if (regex.test(cleanContent)) {
-          return patternName;
+        if (pattern.compiledRegex && pattern.compiledRegex.test(cleanContent)) {
+          return {
+            name: pattern.name,
+            pattern: pattern,
+            match: pattern.compiledRegex.exec(cleanContent)
+          };
         }
       } catch (error) {
-        console.warn(`[PatternMatcher] Error testing pattern "${patternName}":`, error);
+        console.warn(`[PatternMatcher] Error testing pattern "${pattern.name}":`, error);
       }
     }
     
-    // Enhanced fallback pattern detection based on keywords
-    return this.getFallbackTagPattern(cleanContent);
-  }
-
-  getFallbackTagPattern(cleanContent) {
-    const fallbackPatterns = {
-      // Loop patterns (amber)
-      'forLoopSimple': /\bfor\s+\w+\s+in\s+/i,
-      'endfor': /\bendfor\b/i,
-      
-      // Conditional patterns (red)
-      'ifStatement': /\bif\s+/i,
-      'endif': /\bendif\b/i,
-      'else': /\belse\b/i,
-      'elseif': /\belseif\s+/i,
-      'unless': /\bunless\s+/i,
-      'endunless': /\bendunless\b/i,
-      'case': /\bcase\s+/i,
-      'when': /\bwhen\s+/i,
-      'endcase': /\bendcase\b/i,
-      
-      // Assignment patterns (green)
-      'assignment': /\bassign\s+\w+\s*=/i,
-      'capture': /\bcapture\s+/i,
-      'endcapture': /\bendcapture\b/i,
-      
-      // Data fetch patterns (blue)
-      'catalogItems': /\bcatalog_items\b/i,
-      'catalogSelectionItems': /\bcatalog_selection_items\b/i,
-      'connectedContent': /\bconnected_content\b/i,
-      'fetch': /\bfetch\s+/i,
-      'api': /\bapi\s+/i,
-      
-      // Braze-specific patterns (orange)
-      'abortMessage': /\babort_message\b/i,
-      'promotion': /\bpromotion\b/i,
-      
-      // Include patterns (pink)
-      'include': /\binclude\s+/i,
-      'render': /\brender\s+/i,
-      
-      // Comment patterns (default purple)
-      'comment': /\bcomment\b/i,
-      'endcomment': /\bendcomment\b/i
-    };
-    
-    for (const [pattern, regex] of Object.entries(fallbackPatterns)) {
-      if (regex.test(cleanContent)) {
-        return pattern;
+    // Try fallback patterns if no main pattern matches
+    if (fallbackPatterns) {
+      for (const [patternName, compiledRegex] of Object.entries(fallbackPatterns)) {
+        try {
+          if (compiledRegex.test(cleanContent)) {
+            return {
+              name: patternName,
+              pattern: null,
+              match: null
+            };
+          }
+        } catch (error) {
+          console.warn(`[PatternMatcher] Error testing fallback pattern "${patternName}":`, error);
+        }
       }
     }
     
     return null;
   }
 
+  identifyTagPattern(content) {
+    const patterns = this.configManager.getPatterns();
+    const fallbackPatterns = this.configManager.getFallbackTagPatterns();
+    
+    const result = this.findBestMatch(content, patterns, fallbackPatterns);
+    return result ? result.name : null;
+  }
+
   identifyOutputPattern(content) {
     if (!content) return null;
     
     const cleanContent = content.trim();
+    const outputPatterns = this.configManager.getOutputPatterns();
     
-    // Enhanced Braze pattern detection
-    const brazePatterns = {
-      // Standard ${variable} patterns
-      'brazeStandardVar': /^\$\{([^}]+)\}$/,
-      
-      // Nested object patterns: object.${property}
-      'brazeNestedObject': /^([a-zA-Z_][a-zA-Z0-9_]*)\.\$\{([^}]+)\}$/,
-      
-      // Complex object paths: object.property
-      'brazeObjectProperty': /^([a-zA-Z_][a-zA-Z0-9_]*\.)+[a-zA-Z_][a-zA-Z0-9_]*$/,
-      
-      // Subscription state patterns
-      'brazeSubscriptionState': /^subscribed_state\.\$\{([^}]+)\}$/,
-      
-      // Device attribute patterns
-      'brazeDeviceAttribute': /^(most_recently_used_device|targeted_device)\.\$\{([^}]+)\}$/,
-      
-      // Campaign/Canvas attribute patterns
-      'brazeCampaignAttribute': /^(campaign|canvas|card)\.\$\{([^}]+)\}$/,
-      
-      // Event properties patterns
-      'brazeEventProperty': /^event_properties\.\$\{([^}]+)\}$/,
-      
-      // SMS/WhatsApp patterns
-      'brazeMessageProperty': /^(sms|whats_app)\.\$\{([^}]+)\}$/,
-      
-      // App information patterns
-      'brazeAppProperty': /^app\.\$\{([^}]+)\}$/,
-      
-      // Custom attribute patterns
-      'brazeCustomAttribute': /^custom_attribute\.\$\{([^}]+)\}$/
-    };
-    
-    // Check for specific Braze patterns first
-    for (const [patternName, regex] of Object.entries(brazePatterns)) {
-      if (regex.test(cleanContent)) {
-        return patternName;
-      }
-    }
-    
-    // Legacy pattern detection for backwards compatibility
-    const legacyPatterns = {
-      'customAttribute': /custom_attribute/i,
-      'emailAddress': /email_address/i,
-      'firstName': /first_name/i,
-      'lastName': /last_name/i,
-      'userId': /user_id/i,
-      'userName': /user_name/i,
-      'product': /\bproduct\b(?!\s*s)/i,
-      'products': /\bproducts\b/i,
-      'contentBlocks': /content_blocks/i,
-      'recommendedProducts': /recommended_products/i,
-      'campaignName': /campaign\.name/i,
-      'canvasName': /canvas\.name/i,
-      'deviceCarrier': /(most_recently_used_device|targeted_device)\.carrier/i,
-      'deviceModel': /(most_recently_used_device|targeted_device)\.model/i,
-      'variable': /^\w+$/
-    };
-    
-    for (const [pattern, regex] of Object.entries(legacyPatterns)) {
-      if (regex.test(cleanContent)) {
-        return pattern;
+    // Check output patterns first
+    for (const [patternName, compiledRegex] of Object.entries(outputPatterns)) {
+      try {
+        if (compiledRegex.test(cleanContent)) {
+          return patternName;
+        }
+      } catch (error) {
+        console.warn(`[PatternMatcher] Error testing output pattern "${patternName}":`, error);
       }
     }
     
@@ -223,35 +136,54 @@ class PatternMatcher {
 
   transformTagContent(content) {
     const patterns = this.configManager.getPatterns();
-    if (!patterns) return content;
+    if (!patterns || patterns.length === 0) return content;
 
     // Clean the content
     let cleanContent = content.replace(/\s+/g, ' ').trim();
     
-    // Sort patterns by priority to match specific patterns first (SAME AS identifyTagPattern)
-    const sortedPatterns = Object.entries(patterns)
-      .sort(([, a], [, b]) => (a.priority || 999) - (b.priority || 999));
+    // Use the generic findBestMatch function
+    const result = this.findBestMatch(cleanContent, patterns);
     
-    // Try to match against configured patterns in priority order
-    for (const [patternName, pattern] of sortedPatterns) {
+    if (result && result.pattern && result.match) {
+      // Use mode-appropriate template
+      const template = this.displayMode === 'technical' 
+        ? (result.pattern.technical || result.pattern.friendly || cleanContent)
+        : (result.pattern.friendly || result.pattern.technical || cleanContent);
+      return this.fillTemplate(template, result.match, result.pattern);
+    }
+    
+    // Fallback transformations using config data
+    return this.getFallbackTransformation(cleanContent);
+  }
+
+  getFallbackTransformation(content) {
+    const fallbackTransformations = this.configManager.getFallbackTransformations();
+    const transformations = this.displayMode === 'technical' 
+      ? fallbackTransformations.technical || []
+      : fallbackTransformations.friendly || [];
+    
+    for (const transformation of transformations) {
       try {
-        const regex = new RegExp(pattern.regex, 'i');
-        const match = regex.exec(cleanContent);
-        
+        const regex = new RegExp(transformation.regex, 'i');
+        const match = content.match(regex);
         if (match) {
-          // Use mode-appropriate template
-          const template = this.displayMode === 'technical' 
-            ? (pattern.technical || pattern.friendly || cleanContent)
-            : (pattern.friendly || pattern.technical || cleanContent);
-          return this.fillTemplate(template, match, pattern);
+          let result = transformation.template;
+          
+          // Replace numbered placeholders with match groups
+          for (let i = 1; i < match.length; i++) {
+            const value = match[i] || (transformation.defaults && transformation.defaults[i.toString()]) || '';
+            result = result.replace(new RegExp(`\\{${i}\\}`, 'g'), value);
+          }
+          
+          // Process any nested liquid in the result
+          return this.humanizeNestedLiquid(result);
         }
       } catch (error) {
-        console.warn(`[PatternMatcher] Error processing pattern "${patternName}":`, error);
+        console.warn(`[PatternMatcher] Error processing fallback transformation:`, error);
       }
     }
     
-    // Fallback transformations
-    return this.getFallbackTransformation(cleanContent);
+    return content;
   }
 
   fillTemplate(template, match, pattern) {
@@ -261,14 +193,14 @@ class PatternMatcher {
       for (const [placeholder, groupIndex] of Object.entries(pattern.placeholderMap)) {
         let value = match[groupIndex] || pattern.defaults?.[placeholder] || placeholder;
         
-        // Process the value through humanizeNestedLiquid if it contains liquid syntax
-        if (typeof value === 'string' && (value.includes('{{') || value.includes('${')) ) {
-          value = this.humanizeNestedLiquid(value);
-        }
-        
-        // Process conditional expressions that might contain operators
-        if (typeof value === 'string' && placeholder === 'condition') {
-          value = this.processConditionalExpression(value);
+        // UNIVERSAL CLEANUP: Apply comprehensive liquid syntax cleanup to ALL values
+        if (typeof value === 'string') {
+          value = this.cleanLiquidSyntax(value);
+          
+          // Apply pattern-specific processing after universal cleanup
+          if (placeholder === 'condition') {
+            value = this.processConditionalExpression(value);
+          }
         }
         
         result = result.replace(new RegExp(`\\{${placeholder}\\}`, 'g'), value);
@@ -309,9 +241,7 @@ class PatternMatcher {
     // Clean up extra spaces
     processedExpression = processedExpression.replace(/\s+/g, ' ').trim();
 
-    // Process any nested liquid variables in the expression
-    processedExpression = this.humanizeNestedLiquid(processedExpression);
-
+    // NOTE: Liquid syntax cleanup is now handled by cleanLiquidSyntax() before this method is called
     return processedExpression;
   }
 
@@ -319,92 +249,168 @@ class PatternMatcher {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
-  getFallbackTransformation(content) {
-    // Mode-aware transformations
-    const friendlyTransformations = [
-      {
-        regex: /^for\s+(\w+)\s+in\s+(.+?)(?:\s+limit:\s*(\d+))?$/i,
-        transform: (match) => {
-          const collection = this.humanizeNestedLiquid(match[2]);
-          const limit = match[3] ? ` (show ${match[3]} items)` : '';
-          return `Loop through ${collection}${limit}`;
-        }
-      },
-      {
-        regex: /^if\s+(.+)$/i,
-        transform: (match) => {
-          const condition = this.humanizeNestedLiquid(match[1]);
-          const processedCondition = this.processConditionalExpression(condition);
-          return `Display when: ${processedCondition}`;
-        }
-      },
-      {
-        regex: /^unless\s+(.+)$/i,
-        transform: (match) => {
-          const condition = this.humanizeNestedLiquid(match[1]);
-          const processedCondition = this.processConditionalExpression(condition);
-          return `Hide when: ${processedCondition}`;
-        }
-      },
-      {
-        regex: /^assign\s+(\w+)\s*=\s*(.+)$/i,
-        transform: (match) => {
-          const value = this.humanizeNestedLiquid(match[2]);
-          const result = `Create variable: ${match[1]} = ${value}`;
-          return result;
-        }
-      },
-      {
-        regex: /^include\s+['"]*([^'"]+)['"]*$/i,
-        transform: (match) => `Include template: ${match[1]}`
-      },
-      {
-        regex: /^catalog_items\s+(\w+)\s+(.+)$/i,
-        transform: (match) => {
-          const source = this.humanizeNestedLiquid(match[2]);
-          return `Fetch ${match[1]}: ${source}`;
-        }
-      }
-    ];
-
-    const technicalTransformations = [
-      {
-        regex: /^for\s+(\w+)\s+in\s+(.+?)(?:\s+limit:\s*(\d+))?$/i,
-        transform: (match) => `for ${match[1]} in ${match[2]}${match[3] ? ` limit:${match[3]}` : ''}`
-      },
-      {
-        regex: /^if\s+(.+)$/i,
-        transform: (match) => `if ${match[1]}`
-      },
-      {
-        regex: /^unless\s+(.+)$/i,
-        transform: (match) => `unless ${match[1]}`
-      },
-      {
-        regex: /^assign\s+(\w+)\s*=\s*(.+)$/i,
-        transform: (match) => `assign ${match[1]} = ${match[2]}`
-      },
-      {
-        regex: /^include\s+['"]*([^'"]+)['"]*$/i,
-        transform: (match) => `include '${match[1]}'`
-      },
-      {
-        regex: /^catalog_items\s+(\w+)\s+(.+)$/i,
-        transform: (match) => `catalog_items ${match[1]} ${match[2]}`
-      }
-    ];
-    
-    const transformations = this.displayMode === 'technical' ? technicalTransformations : friendlyTransformations;
-    
-    for (const transformation of transformations) {
-      const match = content.match(transformation.regex);
-      if (match) {
-        const result = transformation.transform(match);
-        return result;
-      }
+  cleanLiquidSyntax(content) {
+    if (this.displayMode === 'technical') {
+      return content;
     }
-    
-    return content;
+
+    if (!content || typeof content !== 'string') {
+      return content;
+    }
+
+    let result = content.trim();
+
+    // PHASE 1: Clean up ALL ${} constructs first (most aggressive cleanup)
+    result = result.replace(/\$\{([^}]+)\}/g, (match, variable) => {
+      const cleanVar = variable.replace(/['"]/g, '').trim();
+      return this.createSimpleDescription(cleanVar);
+    });
+
+    // PHASE 2: Clean up ALL {{}} constructs with their filters
+    // Handle complex patterns with filters: {{variable | filter: args}}
+    result = result.replace(/\{\{([^}]+)\}\}\s*\|\s*([^|]+(?:\s*\|\s*[^|]+)*)/g, (match, variable, filters) => {
+      // First clean the variable of any remaining liquid syntax
+      let cleanVariable = variable.trim();
+      cleanVariable = cleanVariable.replace(/\$\{([^}]+)\}/g, (match, variable) => {
+        return this.createSimpleDescription(variable.replace(/['"]/g, '').trim());
+      });
+      cleanVariable = this.transformOutputContent(cleanVariable);
+      
+      const filterParts = filters.split('|').map(f => f.trim());
+      const filterDescriptions = filterParts.map(filter => this.transformFilter(filter));
+      return `${cleanVariable} (${filterDescriptions.join(', ')})`;
+    });
+
+    // Handle simple {{variable}} patterns
+    result = result.replace(/\{\{([^}]+)\}\}/g, (match, variable) => {
+      let cleanVariable = variable.trim();
+      // Clean any nested ${} first
+      cleanVariable = cleanVariable.replace(/\$\{([^}]+)\}/g, (match, variable) => {
+        return this.createSimpleDescription(variable.replace(/['"]/g, '').trim());
+      });
+      return this.transformOutputContent(cleanVariable);
+    });
+
+    // PHASE 3: Process remaining filters that weren't caught above
+    result = result.replace(/\|\s*([^|]+)/g, (match, filter) => {
+      const transformedFilter = this.transformFilter(filter.trim());
+      return ` (${transformedFilter})`;
+    });
+
+    // PHASE 4: Transform complex dot notation patterns
+    result = this.transformDotNotationPatterns(result);
+
+    // PHASE 5: Final aggressive cleanup for any remaining liquid syntax
+    // Clean up any remaining ${} that might have been missed
+    result = result.replace(/\$\{([^}]+)\}/g, (match, variable) => {
+      return this.createSimpleDescription(variable.replace(/['"]/g, '').trim());
+    });
+
+    // Clean up any remaining {{}} that might have been missed
+    result = result.replace(/\{\{([^}]+)\}\}/g, (match, variable) => {
+      return this.createSimpleDescription(variable.replace(/['"]/g, '').trim());
+    });
+
+    // PHASE 6: Clean up extra whitespace and normalize
+    result = result.replace(/\s+/g, ' ').trim();
+
+    return result;
+  }
+
+  transformDotNotationPatterns(content) {
+    if (this.displayMode === 'technical') {
+      return content;
+    }
+
+    let result = content;
+
+    // Handle catalog_items patterns specifically
+    result = result.replace(/\bcatalog_items\.([^.\s]+(?:\.[^.\s]+)*)/g, (match, categoryPath) => {
+      // Split the category path and clean each part
+      const parts = categoryPath.split('.');
+      const cleanParts = parts.map(part => this.createSimpleDescription(part));
+      
+      // Special cases for common patterns
+      if (cleanParts.length >= 2 && cleanParts[0].toLowerCase().includes('custom') && cleanParts[0].toLowerCase().includes('attribute')) {
+        // "Custom attribute.Favorite category" → "favorite category"
+        const relevantParts = cleanParts.slice(1);
+        return `products from ${relevantParts.join(' ').toLowerCase()}`;
+      } else if (cleanParts.length === 1) {
+        return `products from ${cleanParts[0].toLowerCase()}`;
+      } else {
+        return `products from ${cleanParts.join(' → ').toLowerCase()}`;
+      }
+    });
+
+    // Handle event_properties patterns
+    result = result.replace(/\bevent_properties\.([^.\s]+(?:\.[^.\s]+)*)/g, (match, propertyPath) => {
+      const parts = propertyPath.split('.');
+      const cleanParts = parts.map(part => this.createSimpleDescription(part));
+      return `event: ${cleanParts.join(' ').toLowerCase()}`;
+    });
+
+    // Handle "event data" (friendly form) patterns that might have been partially processed  
+    result = result.replace(/\bevent data\.([^.\s]+(?:\.[^.\s]+)*)/g, (match, propertyPath) => {
+      const parts = propertyPath.split('.');
+      const cleanParts = parts.map(part => this.createSimpleDescription(part));
+      return `event: ${cleanParts.join(' ').toLowerCase()}`;
+    });
+
+    // Handle "event:" patterns that might have arrows
+    result = result.replace(/\bevent:\s*([^.\s]+)\s*→\s*([^.\s]+(?:\s+[^.\s]+)*)/g, (match, firstPart, restParts) => {
+      return `event: ${firstPart.toLowerCase()} ${restParts.toLowerCase()}`;
+    });
+
+    // Handle custom_attribute patterns  
+    result = result.replace(/\bcustom_attribute\.([^.\s]+(?:\.[^.\s]+)*)/g, (match, attributePath) => {
+      const parts = attributePath.split('.');
+      const cleanParts = parts.map(part => this.createSimpleDescription(part));
+      return `custom ${cleanParts.join(' ').toLowerCase()}`;
+    });
+
+    // Handle "Custom attribute" (friendly form) patterns that might have been partially processed
+    result = result.replace(/\bCustom attribute\.([^.\s]+(?:\.[^.\s]+)*)/g, (match, attributePath) => {
+      const parts = attributePath.split('.');
+      const cleanParts = parts.map(part => this.createSimpleDescription(part));
+      return `custom ${cleanParts.join(' ').toLowerCase()}`;
+    });
+
+    // Handle other common Braze object patterns
+    result = result.replace(/\b(user|campaign|canvas|sms|whats_app|card|app|most_recently_used_device|targeted_device)\.([^.\s]+(?:\.[^.\s]+)*)/g, 
+      (match, objectName, propertyPath) => {
+        const objectFriendly = this.createSimpleDescription(objectName);
+        const parts = propertyPath.split('.');
+        const cleanParts = parts.map(part => this.createSimpleDescription(part));
+        
+        if (cleanParts.length === 1) {
+          return `${objectFriendly.toLowerCase()} ${cleanParts[0].toLowerCase()}`;
+        } else {
+          return `${objectFriendly.toLowerCase()} → ${cleanParts.join(' → ').toLowerCase()}`;
+        }
+      }
+    );
+
+    // Handle remaining dot notation patterns (generic case)
+    result = result.replace(/\b([a-zA-Z_][a-zA-Z0-9_]*)\.([a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)*)/g, 
+      (match, objectName, propertyPath) => {
+        // Skip if this looks like it's already been processed or contains friendly text
+        if (match.includes(' ') || objectName.includes(' ')) {
+          return match;
+        }
+        
+        const objectFriendly = this.createSimpleDescription(objectName);
+        const parts = propertyPath.split('.');
+        const cleanParts = parts.map(part => this.createSimpleDescription(part));
+        
+        if (cleanParts.length === 1) {
+          return `${objectFriendly.toLowerCase()} ${cleanParts[0].toLowerCase()}`;
+        } else {
+          return `${objectFriendly.toLowerCase()} → ${cleanParts.join(' → ').toLowerCase()}`;
+        }
+      }
+    );
+
+    return result;
   }
 
   humanizeNestedLiquid(content) {
@@ -414,7 +420,7 @@ class PatternMatcher {
     
     let result = content;
     
-    // Handle complex assignment values with filters first
+    // First pass: Handle complex patterns with filters
     // Pattern: {{object.${property}}} | filter: "args"
     const complexWithFilterPattern = /\{\{([^}]+\.\$\{[^}]+\}[^}]*)\}\}\s*\|\s*([^|]+)/g;
     result = result.replace(complexWithFilterPattern, (match, innerContent, filterPart) => {
@@ -423,21 +429,21 @@ class PatternMatcher {
       return `${transformedVariable} (${transformedFilter})`;
     });
     
-    // Handle the special case {{${variable}}} - direct variable reference
+    // Second pass: Handle the special case {{${variable}}} - direct variable reference
     const directVarPattern = /\{\{\$\{([^}]+)\}\}\}/g;
     result = result.replace(directVarPattern, (match, variable) => {
       const friendlyVar = this.createSimpleDescription(variable);
       return friendlyVar;
     });
     
-    // Handle the common case: {{custom_attribute.${variable}}} (without filters already handled above)
+    // Third pass: Handle the common case: {{custom_attribute.${variable}}} (without filters)
     const commonPattern = /\{\{([^}]+\$\{[^}]+\}[^}]*)\}\}/g;
     result = result.replace(commonPattern, (match, innerContent) => {
       const transformed = this.transformOutputContent(innerContent);
       return transformed;
     });
     
-    // Handle any remaining {{...}} patterns (without ${} inside) with filters
+    // Fourth pass: Handle any remaining {{...}} patterns with filters
     const simpleWithFilterPattern = /\{\{([^{}]+)\}\}\s*\|\s*([^|]+)/g;
     result = result.replace(simpleWithFilterPattern, (match, innerContent, filterPart) => {
       const transformedVariable = this.transformOutputContent(innerContent);
@@ -445,23 +451,37 @@ class PatternMatcher {
       return `${transformedVariable} (${transformedFilter})`;
     });
     
-    // Handle any remaining {{...}} patterns (without ${} inside and without filters)
+    // Fifth pass: Handle any remaining {{...}} patterns (without ${} inside and without filters)
     result = result.replace(/\{\{([^{}]+)\}\}/g, (match, innerContent) => {
       const transformed = this.transformOutputContent(innerContent);
       return transformed;
     });
     
-    // Handle standalone ${variable} syntax - convert to just the variable name
+    // Sixth pass: Handle standalone ${variable} syntax - convert to just the variable name
     result = result.replace(/\$\{([^}]+)\}/g, (match, variable) => {
       return this.createSimpleDescription(variable);
     });
     
-    // Handle remaining filters that weren't caught by the patterns above
+    // Seventh pass: Handle remaining filters that weren't caught by the patterns above
     const remainingFilterPattern = /\|\s*([^|]+)/g;
     result = result.replace(remainingFilterPattern, (match, filterPart) => {
       const transformedFilter = this.transformFilter(filterPart.trim());
       return ` (${transformedFilter})`;
     });
+    
+    // Final cleanup passes to ensure all liquid constructs are cleaned up
+    // Remove any remaining double curly braces that might have been missed
+    result = result.replace(/\{\{([^}]+)\}\}/g, (match, innerContent) => {
+      return this.transformOutputContent(innerContent.trim());
+    });
+    
+    // Clean up any remaining ${} constructs that weren't caught
+    result = result.replace(/\$\{([^}]+)\}/g, (match, variable) => {
+      return this.createSimpleDescription(variable.trim());
+    });
+    
+    // Clean up extra spaces and normalize whitespace
+    result = result.replace(/\s+/g, ' ').trim();
     
     return result;
   }
@@ -498,6 +518,19 @@ class PatternMatcher {
       result = this.displayMode === 'technical'
         ? mainContent
         : this.createSimpleDescription(mainContent);
+    }
+    
+    // Ensure no liquid syntax remains in the result (final cleanup)
+    if (this.displayMode === 'friendly') {
+      // Clean up any remaining ${} constructs
+      result = result.replace(/\$\{([^}]+)\}/g, (match, variable) => {
+        return this.createSimpleDescription(variable.trim());
+      });
+      
+      // Clean up any remaining {{}} constructs
+      result = result.replace(/\{\{([^}]+)\}\}/g, (match, variable) => {
+        return this.createSimpleDescription(variable.trim());
+      });
     }
     
     // Add filter information
@@ -546,7 +579,19 @@ class PatternMatcher {
     const variables = this.configManager.getVariables();
     const dynamicPatterns = this.configManager.getDynamicPatterns();
     
-    // Pattern: object.${property}
+    // First, let's handle more complex patterns that might have multiple ${} constructs
+    let workingVariable = variable;
+    
+    // Clean up any remaining ${} constructs by converting them to their friendly names
+    workingVariable = workingVariable.replace(/\$\{([^}]+)\}/g, (match, property) => {
+      const cleanProperty = property.replace(/['"]/g, ''); // Remove quotes
+      if (variables[cleanProperty]) {
+        return variables[cleanProperty].friendly || this.createSimpleDescription(cleanProperty);
+      }
+      return this.createSimpleDescription(cleanProperty);
+    });
+    
+    // Pattern: object.${property} (after ${} cleanup, this becomes object.friendlyProperty)
     const objectPropertyMatch = variable.match(/^([^.]+)\.\$\{([^}]+)\}$/);
     if (objectPropertyMatch) {
       const [, objectName, property] = objectPropertyMatch;
@@ -618,7 +663,27 @@ class PatternMatcher {
       return this.createSimpleDescription(property);
     }
     
-    return variable;
+    // If it's a complex pattern that wasn't caught by the above, return the cleaned version
+    if (workingVariable !== variable) {
+      return workingVariable;
+    }
+    
+    // Fallback: try to clean up any remaining liquid syntax
+    let result = variable;
+    
+    // Handle dot notation with remaining constructs
+    if (result.includes('.')) {
+      const parts = result.split('.');
+      const transformedParts = parts.map(part => {
+        if (variables[part]) {
+          return variables[part].friendly || this.createSimpleDescription(part);
+        }
+        return this.createSimpleDescription(part);
+      });
+      return transformedParts.join(' → ');
+    }
+    
+    return this.createSimpleDescription(result);
   }
 
   processDotNotationVariable(variable, variables) {
@@ -667,6 +732,7 @@ class PatternMatcher {
 
   transformFilter(filter) {
     const filters = this.configManager.getFilters();
+    const fallbackFilterDescriptions = this.configManager.getFallbackFilterDescriptions();
     
     // Parse filter with potential arguments - handle quoted strings properly
     const colonIndex = filter.indexOf(':');
@@ -678,7 +744,6 @@ class PatternMatcher {
       
       // Parse arguments, handling quoted strings
       if (argString) {
-        // Split by comma but respect quoted strings
         args = this.parseFilterArguments(argString);
       }
     } else {
@@ -689,35 +754,29 @@ class PatternMatcher {
       return `${filterName}${args.length > 0 ? ': ' + args.join(', ') : ''}`;
     }
     
-    // Friendly descriptions with actual values
-    const filterDescriptions = {
-      'id': (args) => args.length > 0 ? `ID: ${args[0]}` : 'with ID',
-      'default': (args) => args.length > 0 ? `default: ${args[0]}` : 'with default value',
-      'capitalize': () => 'capitalized',
-      'upcase': () => 'uppercase', 
-      'downcase': () => 'lowercase',
-      'truncate': (args) => args.length > 0 ? `truncated to ${args[0]} characters` : 'truncated',
-      'limit': (args) => args.length > 0 ? `limited to ${args[0]} items` : 'limited',
-      'strip': () => 'whitespace removed',
-      'escape': () => 'HTML escaped',
-      'join': (args) => args.length > 0 ? `joined with ${args[0]}` : 'joined',
-      'split': (args) => args.length > 0 ? `split by ${args[0]}` : 'split',
-      'replace': (args) => args.length >= 2 ? `replace ${args[0]} with ${args[1]}` : 'replaced',
-      'remove': (args) => args.length > 0 ? `remove ${args[0]}` : 'removed',
-      'append': (args) => args.length > 0 ? `append ${args[0]}` : 'appended',
-      'prepend': (args) => args.length > 0 ? `prepend ${args[0]}` : 'prepended'
-    };
-    
+    // Check configured filters first
     if (filters[filterName]) {
-      // Use config-defined friendly description
       let description = filters[filterName].friendly || filterName;
       // Replace {value} placeholder with actual first argument
       if (args.length > 0) {
         description = description.replace(/\{value\}/g, args[0]);
       }
       return description;
-    } else if (filterDescriptions[filterName]) {
-      return filterDescriptions[filterName](args);
+    }
+    
+    // Check fallback filter descriptions
+    if (fallbackFilterDescriptions[filterName]) {
+      const fallback = fallbackFilterDescriptions[filterName];
+      if (args.length > 0 && fallback.withArgs) {
+        let result = fallback.withArgs;
+        // Replace numbered placeholders {0}, {1}, etc.
+        for (let i = 0; i < args.length; i++) {
+          result = result.replace(new RegExp(`\\{${i}\\}`, 'g'), args[i]);
+        }
+        return result;
+      } else if (fallback.withoutArgs) {
+        return fallback.withoutArgs;
+      }
     }
     
     // Fallback - show filter name with arguments
@@ -768,26 +827,8 @@ class PatternMatcher {
       return variables[variable].friendly;
     }
     
-    // Handle common variable name mappings first
-    const commonMappings = {
-      'membership_level': 'membership level',
-      'max_display': 'max display',
-      'shopping_cart': 'shopping cart',
-      'total_points': 'total points',
-      'bonus_points': 'bonus points',
-      'email_global': 'email global',
-      'inbound_message_body': 'inbound message body',
-      'variant_name': 'variant name',
-      'geofence_name': 'geofence name',
-      'user_preferences': 'user preferences',
-      'ad_tracking_enabled': 'ad tracking enabled',
-      'foreground_push_enabled': 'foreground push enabled',
-      'inbound_media_urls': 'inbound media urls',
-      'preferred_category': 'preferred category',
-      'api_id': 'API ID',
-      'most_recent_locale': 'most recent locale'
-    };
-    
+    // Check common variable mappings from config
+    const commonMappings = this.configManager.getCommonVariableMappings();
     if (commonMappings[variable.toLowerCase()]) {
       return commonMappings[variable.toLowerCase()];
     }
