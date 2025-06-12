@@ -398,6 +398,19 @@ class PatternMatcher {
           return match;
         }
         
+        // Skip URLs - check if this is part of a URL pattern
+        const fullContext = result;
+        const matchIndex = fullContext.indexOf(match);
+        const beforeMatch = fullContext.substring(Math.max(0, matchIndex - 10), matchIndex);
+        const afterMatch = fullContext.substring(matchIndex + match.length, Math.min(fullContext.length, matchIndex + match.length + 10));
+        
+        // Check for URL patterns (http://, https://, or common URL structures)
+        if (beforeMatch.includes('http') || beforeMatch.includes('://') || 
+            afterMatch.includes('/') || match.includes('com') || match.includes('org') || 
+            match.includes('net') || match.includes('api')) {
+          return match;
+        }
+        
         const objectFriendly = this.createSimpleDescription(objectName);
         const parts = propertyPath.split('.');
         const cleanParts = parts.map(part => this.createSimpleDescription(part));

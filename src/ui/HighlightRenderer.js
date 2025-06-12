@@ -149,26 +149,7 @@ class HighlightRenderer {
     return span;
   }
 
-  // Method to apply theme-specific styling
-  applyTheme(theme) {
-    const root = document.documentElement;
-    
-    switch (theme) {
-      case 'dark':
-        root.setAttribute('data-liquid-theme', 'dark');
-        break;
-      case 'light':
-        root.setAttribute('data-liquid-theme', 'light');
-        break;
-      case 'auto':
-        // Use system preference
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        root.setAttribute('data-liquid-theme', prefersDark ? 'dark' : 'light');
-        break;
-      default:
-        root.removeAttribute('data-liquid-theme');
-    }
-  }
+
 
   // Method to get styling information for debugging
   getElementStyling(element) {

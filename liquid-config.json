@@ -17,7 +17,7 @@
   "patterns": {
     "forLoopComplex": {
       "regex": "for\\s+(\\w+)\\s+in\\s+(.*?)(?:\\s+limit:\\s*(\\d+))?\\s*$",
-      "friendly": "Loop through {collection} (show {limit} items)",
+      "friendly": "Repeat for each {collection} (showing {limit} items)",
       "technical": "for {item} in {collection} limit:{limit}",
       "placeholderMap": {
         "item": 1,
@@ -32,7 +32,7 @@
     
     "forLoopSimple": {
       "regex": "for\\s+(\\w+)\\s+in\\s+(\\w+)(?:\\s+limit:\\s*(\\d+))?",
-      "friendly": "Loop through {collection} (show {limit} items)",
+      "friendly": "Repeat for each {collection} (showing {limit} items)",
       "technical": "for {item} in {collection} limit:{limit}",
       "placeholderMap": {
         "item": 1,
@@ -47,13 +47,13 @@
     
     "endfor": {
       "regex": "endfor",
-      "friendly": "End of loop",
+      "friendly": "End repeating section",
       "technical": "endfor"
     },
     
     "ifStatement": {
       "regex": "if\\s+(.+)",
-      "friendly": "Display when: {condition}",
+      "friendly": "Show when: {condition}",
       "technical": "if {condition}",
       "placeholderMap": {
         "condition": 1
@@ -62,19 +62,19 @@
     
     "endif": {
       "regex": "endif",
-      "friendly": "End condition",
+      "friendly": "End conditional section",
       "technical": "endif"
     },
     
     "else": {
       "regex": "else",
-      "friendly": "Otherwise",
+      "friendly": "Otherwise show",
       "technical": "else"
     },
     
     "elseif": {
       "regex": "elseif\\s+(.+)",
-      "friendly": "Or if: {condition}",
+      "friendly": "Or show when: {condition}",
       "technical": "elseif {condition}",
       "placeholderMap": {
         "condition": 1
@@ -83,7 +83,7 @@
     
     "catalogItems": {
       "regex": "catalog_items\\s+((?:\\{\\{[^}]+\\}\\}|\\w+))\\s+(.+)",
-      "friendly": "Get {catalog_name} data: {items}",
+      "friendly": "Fetch {catalog_name} data: {items}",
       "technical": "catalog_items {catalog_name} {items}",
       "placeholderMap": {
         "catalog_name": 1,
@@ -94,7 +94,7 @@
     
     "catalogItemsSimple": {
       "regex": "catalog_items\\s+(\\w+)\\s+(\\w+)$",
-      "friendly": "Get {catalog_name} item: {item_id}",
+      "friendly": "Fetch {catalog_name} item: {item_id}",
       "technical": "catalog_items {catalog_name} {item_id}",
       "placeholderMap": {
         "catalog_name": 1,
@@ -105,7 +105,7 @@
     
     "catalogItemsMultiple": {
       "regex": "catalog_items\\s+(\\w+)\\s+([\\d\\s]+)$",
-      "friendly": "Get multiple {catalog_name} items ({item_ids})",
+      "friendly": "Fetch multiple {catalog_name} items ({item_ids})",
       "technical": "catalog_items {catalog_name} {item_ids}",
       "placeholderMap": {
         "catalog_name": 1,
@@ -116,7 +116,7 @@
     
     "catalogItemsWithRerender": {
       "regex": "catalog_items\\s+(\\w+)\\s+(\\w+)\\s+:rerender",
-      "friendly": "Get and re-process {catalog_name} item: {item_id}",
+      "friendly": "Fetch and refresh {catalog_name} item: {item_id}",
       "technical": "catalog_items {catalog_name} {item_id} :rerender",
       "placeholderMap": {
         "catalog_name": 1,
@@ -127,7 +127,7 @@
     
     "catalogSelectionItems": {
       "regex": "catalog_selection_items\\s+(\\w+)\\s+(\\w+)",
-      "friendly": "Get {catalog_name} selection: {selection_name}",
+      "friendly": "Fetch {catalog_name} group: {selection_name}",
       "technical": "catalog_selection_items {catalog_name} {selection_name}",
       "placeholderMap": {
         "catalog_name": 1,
@@ -138,7 +138,7 @@
     
     "catalogBasic": {
       "regex": "catalog_items\\s+(\\w+)$",
-      "friendly": "Access {catalog_name} catalog",
+      "friendly": "Access {catalog_name} data",
       "technical": "catalog_items {catalog_name}",
       "placeholderMap": {
         "catalog_name": 1
@@ -158,7 +158,7 @@
     
     "include": {
       "regex": "include\\s+['\"]([^'\"]+)['\"]",
-      "friendly": "Include template: {template}",
+      "friendly": "Insert template: {template}",
       "technical": "include '{template}'",
       "placeholderMap": {
         "template": 1
@@ -167,7 +167,7 @@
     
     "capture": {
       "regex": "capture\\s+(\\w+)",
-      "friendly": "Start capturing as {variable}",
+      "friendly": "Start saving content as {variable}",
       "technical": "capture {variable}",
       "placeholderMap": {
         "variable": 1
@@ -176,7 +176,7 @@
     
     "endcapture": {
       "regex": "endcapture",
-      "friendly": "Stop capturing",
+      "friendly": "Stop saving content",
       "technical": "endcapture"
     },
     
@@ -191,7 +191,7 @@
     
     "endunless": {
       "regex": "endunless",
-      "friendly": "End hide condition",
+      "friendly": "End hidden section",
       "technical": "endunless"
     },
     
@@ -221,19 +221,19 @@
     
     "comment": {
       "regex": "comment",
-      "friendly": "Start comment",
+      "friendly": "Start note section",
       "technical": "comment"
     },
     
     "endcomment": {
       "regex": "endcomment", 
-      "friendly": "End comment",
+      "friendly": "End note section",
       "technical": "endcomment"
     },
     
     "abortMessage": {
       "regex": "abort_message\\((.*)\\)",
-      "friendly": "Stop message: {reason}",
+      "friendly": "Don't send message because: {reason}",
       "technical": "abort_message({reason})",
       "placeholderMap": {
         "reason": 1
@@ -242,7 +242,7 @@
     
     "promotion": {
       "regex": "promotion\\s+(\\w+)",
-      "friendly": "Apply promotion: {promo_name}",
+      "friendly": "Apply discount: {promo_name}",
       "technical": "promotion {promo_name}",
       "placeholderMap": {
         "promo_name": 1
@@ -251,7 +251,7 @@
     
     "connectedContent": {
       "regex": "connected_content\\s+(.+)",
-      "friendly": "Fetch external data: {url}",
+      "friendly": "Get data from website: {url}",
       "technical": "connected_content {url}",
       "placeholderMap": {
         "url": 1
@@ -260,7 +260,7 @@
     
     "render": {
       "regex": "render\\s+['\"]([^'\"]+)['\"]",
-      "friendly": "Render template: {template}",
+      "friendly": "Display template: {template}",
       "technical": "render '{template}'",
       "placeholderMap": {
         "template": 1
@@ -735,12 +735,12 @@
   
   "filters": {
     "limit": {
-      "friendly": "limited to {value} items",
+      "friendly": "showing only {value} items",
       "description": "Restricts the number of items shown"
     },
     
     "default": {
-      "friendly": "default: {value}",
+      "friendly": "with fallback: {value}",
       "description": "Fallback value if empty"
     },
     
@@ -750,32 +750,32 @@
     },
     
     "truncate": {
-      "friendly": "truncated to {value} characters",
+      "friendly": "shortened to {value} characters",
       "description": "Cuts off text at specified length"
     },
     
     "id": {
-      "friendly": "ID: {value}",
+      "friendly": "with identifier: {value}",
       "description": "Sets an identifier"
     },
     
     "upcase": {
-      "friendly": "uppercase",
+      "friendly": "converted to uppercase",
       "description": "Converts text to uppercase"
     },
     
     "downcase": {
-      "friendly": "lowercase", 
+      "friendly": "converted to lowercase", 
       "description": "Converts text to lowercase"
     },
     
     "strip": {
-      "friendly": "whitespace removed",
+      "friendly": "with extra spaces removed",
       "description": "Removes leading and trailing whitespace"
     },
     
     "escape": {
-      "friendly": "HTML escaped",
+      "friendly": "with special characters protected",
       "description": "Escapes HTML characters"
     },
     
@@ -790,7 +790,7 @@
     },
     
     "times": {
-      "friendly": "times {value}",
+      "friendly": "multiplied by {value}",
       "description": "Multiplies the input by a number"
     },
     
@@ -800,72 +800,72 @@
     },
     
     "where": {
-      "friendly": "where {value}",
+      "friendly": "filtered by {value}",
       "description": "Filters array by property value"
     },
     
     "first": {
-      "friendly": "first item",
+      "friendly": "showing first item only",
       "description": "Gets the first item from an array"
     },
     
     "last": {
-      "friendly": "last item", 
+      "friendly": "showing last item only", 
       "description": "Gets the last item from an array"
     },
     
     "size": {
-      "friendly": "count",
+      "friendly": "counting items",
       "description": "Returns the size of an array or string"
     },
     
     "sort": {
-      "friendly": "sorted",
+      "friendly": "arranged in order",
       "description": "Sorts an array"
     },
     
     "reverse": {
-      "friendly": "reversed",
+      "friendly": "arranged in reverse order",
       "description": "Reverses the order of an array"
     },
     
     "uniq": {
-      "friendly": "unique items only",
+      "friendly": "showing unique items only",
       "description": "Removes duplicate items from an array"
     },
     
     "map": {
-      "friendly": "mapped to {value}",
+      "friendly": "extracting {value} from each",
       "description": "Extracts property values from array objects"
     },
     
     "join": {
-      "friendly": "joined with {value}",
+      "friendly": "combined with {value}",
       "description": "Joins array elements with a separator"
     },
     
     "split": {
-      "friendly": "split by {value}",
+      "friendly": "separated by {value}",
       "description": "Splits a string into an array"
     },
     
     "replace": {
-      "friendly": "replace {value}",
+      "friendly": "replacing {value}",
       "description": "Replaces text with another value"
     },
     
     "remove": {
-      "friendly": "remove {value}",
+      "friendly": "removing {value}",
       "description": "Removes specified text"
     },
     
     "append": {
-      "friendly": "append {value}",
+      "friendly": "adding {value} to end",
       "description": "Adds text to the end"
     },
     
     "prepend": {
-      "friendly": "prepend {value}",
+      "friendly": "adding {value} to beginning",
       "description": "Adds text to the beginning"
     },
     
@@ -875,17 +875,17 @@
     },
     
     "round": {
-      "friendly": "rounded",
+      "friendly": "rounded to whole number",
       "description": "Rounds a number"
     },
     
     "abs": {
-      "friendly": "absolute value",
+      "friendly": "converted to positive number",
       "description": "Returns absolute value of a number"
     },
 
     "compact": {
-      "friendly": "with nil items removed",
+      "friendly": "with empty items removed",
       "description": "Removes any nil items from an array"
     },
     
@@ -895,37 +895,37 @@
     },
     
     "index": {
-      "friendly": "item at index {value}",
+      "friendly": "showing item at position {value}",
       "description": "Returns the item at the specified index location in an array"
     },
     
     "sort_natural": {
-      "friendly": "sorted alphabetically",
+      "friendly": "arranged alphabetically",
       "description": "Sorts items in case-insensitive alphabetical order"
     },
     
     "at_most": {
-      "friendly": "maximum {value}",
+      "friendly": "capped at {value}",
       "description": "Limits a number to a maximum value"
     },
     
     "at_least": {
-      "friendly": "minimum {value}",
+      "friendly": "with minimum of {value}",
       "description": "Limits a number to a minimum value"
     },
     
     "ceil": {
-      "friendly": "rounded up",
+      "friendly": "rounded up to whole number",
       "description": "Rounds an output up to the nearest integer"
     },
     
     "floor": {
-      "friendly": "rounded down",
+      "friendly": "rounded down to whole number",
       "description": "Rounds an output down to the nearest integer"
     },
     
     "modulo": {
-      "friendly": "modulo {value}",
+      "friendly": "showing remainder when divided by {value}",
       "description": "Divides by a number and returns the remainder"
     },
     
@@ -935,112 +935,112 @@
     },
     
     "camelcase": {
-      "friendly": "in CamelCase",
+      "friendly": "formatted as CamelCase",
       "description": "Converts a string into CamelCase (not supported in Braze)"
     },
     
     "handle": {
-      "friendly": "as handle",
+      "friendly": "formatted as web address",
       "description": "Formats a string into a handle (not supported in Braze)"
     },
     
     "handleize": {
-      "friendly": "as handle",
+      "friendly": "formatted as web address",
       "description": "Formats a string into a handle (not supported in Braze)"
     },
     
     "md5": {
-      "friendly": "MD5 hashed",
+      "friendly": "converted to secure code",
       "description": "Converts a string into an MD5 hash"
     },
     
     "sha1": {
-      "friendly": "SHA-1 hashed",
+      "friendly": "converted to secure code",
       "description": "Converts a string into a SHA-1 hash"
     },
     
     "hmac_sha1_hex": {
-      "friendly": "HMAC SHA-1 hashed with {value}",
+      "friendly": "securely encoded with {value}",
       "description": "Converts a string into a SHA-1 hash using HMAC"
     },
     
     "hmac_sha_1": {
-      "friendly": "HMAC SHA-1 hashed with {value}",
+      "friendly": "securely encoded with {value}",
       "description": "Converts a string into a SHA-1 hash using HMAC (legacy)"
     },
     
     "hmac_sha256": {
-      "friendly": "HMAC SHA-256 hashed with {value}",
+      "friendly": "securely encoded with {value}",
       "description": "Converts a string into a SHA-256 hash using HMAC"
     },
     
     "hmac_sha512": {
-      "friendly": "HMAC SHA-512 hashed with {value}",
+      "friendly": "securely encoded with {value}",
       "description": "Converts a string into a SHA-512 hash using HMAC"
     },
     
     "newline_to_br": {
-      "friendly": "with line breaks as HTML",
+      "friendly": "with line breaks converted for web",
       "description": "Inserts HTML <br> tags for line breaks"
     },
     
     "pluralize": {
-      "friendly": "pluralized",
+      "friendly": "made singular or plural",
       "description": "Outputs singular or plural based on number (not supported in Braze)"
     },
     
     "remove_first": {
-      "friendly": "remove first {value}",
+      "friendly": "removing first occurrence of {value}",
       "description": "Removes only the first occurrence of a substring"
     },
     
     "replace_first": {
-      "friendly": "replace first {value}",
+      "friendly": "replacing first occurrence of {value}",
       "description": "Replaces the first occurrence of a string"
     },
     
     "slice": {
-      "friendly": "slice from {value}",
+      "friendly": "starting from position {value}",
       "description": "Returns a substring starting at the specified index"
     },
     
     "lstrip": {
-      "friendly": "left whitespace removed",
+      "friendly": "with left spaces removed",
       "description": "Strips whitespace from the left side (not supported in Braze)"
     },
     
     "rstrip": {
-      "friendly": "right whitespace removed", 
+      "friendly": "with right spaces removed", 
       "description": "Strips whitespace from the right side (not supported in Braze)"
     },
     
     "strip_html": {
-      "friendly": "HTML tags removed",
+      "friendly": "with web formatting removed",
       "description": "Strips all HTML tags from a string"
     },
     
     "strip_newlines": {
-      "friendly": "newlines removed",
+      "friendly": "with line breaks removed",
       "description": "Removes any line breaks/newlines from a string"
     },
     
     "truncatewords": {
-      "friendly": "truncated to {value} words",
+      "friendly": "shortened to {value} words",
       "description": "Truncates a string to the specified number of words"
     },
     
     "format_address": {
-      "friendly": "formatted as address",
+      "friendly": "formatted as mailing address",
       "description": "Formats an address by locale (not supported in Braze)"
     },
     
     "highlight": {
-      "friendly": "highlighted",
+      "friendly": "with search terms highlighted",
       "description": "Wraps search results with HTML highlight tags (not supported in Braze)"
     },
     
     "time_zone": {
-      "friendly": "in time zone {value}",
+      "friendly": "converted to {value} time zone",
       "description": "Converts time to specified time zone"
     },
     
@@ -1055,12 +1055,12 @@
     },
     
     "json_escape": {
-      "friendly": "JSON escaped",
+      "friendly": "prepared for data transfer",
       "description": "Escapes special characters for JSON format"
     },
     
     "url_param_escape": {
-      "friendly": "URL parameter escaped",
+      "friendly": "prepared for web address",
       "description": "Escapes characters for safe URL parameter usage"
     }
   },
@@ -1103,13 +1103,13 @@
       "type": "comparison"
     },
     "or": {
-      "friendly": "OR",
+      "friendly": "or",
       "technical": "or",
       "description": "Logical OR - true if either condition A or condition B is true",
       "type": "logical"
     },
     "and": {
-      "friendly": "AND",
+      "friendly": "and",
       "technical": "and", 
       "description": "Logical AND - true only if both condition A and condition B are true",
       "type": "logical"
@@ -1303,12 +1303,12 @@
     "friendly": [
       {
         "regex": "^for\\s+(\\w+)\\s+in\\s+(.+?)(?:\\s+limit:\\s*(\\d+))?$",
-        "template": "Loop through {2} (show {3} items)",
+        "template": "Repeat for each {2} (showing {3} items)",
         "defaults": { "3": "all" }
       },
       {
         "regex": "^if\\s+(.+)$",
-        "template": "Display when: {1}"
+        "template": "Show when: {1}"
       },
       {
         "regex": "^unless\\s+(.+)$",
@@ -1316,11 +1316,11 @@
       },
       {
         "regex": "^assign\\s+(\\w+)\\s*=\\s*(.+)$",
-        "template": "Create variable: {1} = {2}"
+        "template": "Set {1} to: {2}"
       },
       {
         "regex": "^include\\s+['\"]?([^'\"]+)['\"]?$",
-        "template": "Include template: {1}"
+        "template": "Insert template: {1}"
       },
       {
         "regex": "^catalog_items\\s+(\\w+)\\s+(.+)$",
