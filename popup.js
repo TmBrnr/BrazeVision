@@ -7,11 +7,11 @@ class PopupController {
     this.modeExamples = {
       friendly: {
         text: 'Loop through products from favorite category (show 5 items)',
-        description: 'Natural language with comprehensive cleanup of all ${}, {{}} and dot notation'
+        description: 'Translates Liquid into natural language for easy understanding. It simplifies complex syntax, making it accessible to non-technical users.'
       },
       technical: {
         text: 'for product in catalog_items.${custom_attribute.${favorite_category}} limit:{{ event_properties.${max_items} | default: 5 }}',
-        description: 'Original Liquid syntax preserved exactly as written'
+        description: 'Displays the original Liquid syntax. This mode is for technical users who need to see the exact code without any transformations.'
       }
     };
     this.init();
@@ -207,10 +207,15 @@ class PopupController {
   updateModeSelector() {
     const modeOptions = document.querySelectorAll('.mode-option');
     modeOptions.forEach(option => {
-      if (option.dataset.mode === this.currentMode) {
+      const mode = option.dataset.mode;
+      if (mode === this.currentMode) {
         option.classList.add('active');
       } else {
         option.classList.remove('active');
+      }
+      // Add tooltip with description
+      if (this.modeExamples[mode]) {
+        option.title = this.modeExamples[mode].description;
       }
     });
   }
