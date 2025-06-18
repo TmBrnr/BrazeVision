@@ -221,8 +221,26 @@ body {
     }
 
     .footer {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
       text-align: center;
       font-size: 11px;
       color: #9ca3af;
       margin-top: 16px;
+    }
+
+    .footer p {
+      margin: 0;
+    }
+
+    .footer a {
+      color: #6b7280;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
     } 
