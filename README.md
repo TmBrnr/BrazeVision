@@ -4,8 +4,6 @@
 
 A Chrome extension that transforms Braze's Liquid templating syntax into a human-readable format with a clean visual hierarchy. Designed for both technical and non-technical users, it simplifies complex logic into understandable descriptions, making email and message personalization easier than ever.
 
-![Braze Vision Screenshot](https://raw.githubusercontent.com/TmBrnr/BrazeVision/main/assets/screenshot.png)
-
 ## ✨ Features
 
 - **Intelligent Syntax Highlighting**: Automatically detects and highlights Liquid syntax on any webpage.
