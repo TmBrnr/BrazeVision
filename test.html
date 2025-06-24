@@ -389,7 +389,9 @@ Examples:
 {% for item in custom_attribute.${preferred_items} limit:3 %}
 {{ user.first_name | default: 'Valued Customer' }}
 {% catalog_items {{ category.name }} {{ filters }} %}
-{% if custom_attribute.${segment} == 'premium' %}"></textarea>
+{% if custom_attribute.${segment} == 'premium' %}
+{% shopping_cart {{context.${cart_id}}} %}
+{% unknown_tag {{user.${property}}} and ${variable} %}"></textarea>
                 <button id="test-custom" class="test-btn">Test Pattern</button>
             </div>
             <div id="custom-results" class="custom-results"></div>

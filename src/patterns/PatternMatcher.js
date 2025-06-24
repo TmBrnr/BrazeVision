@@ -115,8 +115,8 @@ class PatternMatcher {
     for (const [patternName, compiledRegex] of Object.entries(outputPatterns)) {
       try {
         if (compiledRegex.test(cleanContent)) {
-          return patternName;
-        }
+        return patternName;
+      }
       } catch (error) {
         console.warn(`[PatternMatcher] Error testing output pattern "${patternName}":`, error);
       }
@@ -145,8 +145,8 @@ class PatternMatcher {
     const result = this.findBestMatch(cleanContent, patterns);
     
     if (result && result.pattern && result.match) {
-      // Use mode-appropriate template
-      const template = this.displayMode === 'technical' 
+          // Use mode-appropriate template
+          const template = this.displayMode === 'technical' 
         ? (result.pattern.technical || result.pattern.friendly || cleanContent)
         : (result.pattern.friendly || result.pattern.technical || cleanContent);
       return this.fillTemplate(template, result.match, result.pattern);
@@ -171,7 +171,13 @@ class PatternMatcher {
           
           // Replace numbered placeholders with match groups
           for (let i = 1; i < match.length; i++) {
-            const value = match[i] || (transformation.defaults && transformation.defaults[i.toString()]) || '';
+            let value = match[i] || (transformation.defaults && transformation.defaults[i.toString()]) || '';
+            
+            // UNIVERSAL CLEANUP: Apply comprehensive liquid syntax cleanup to ALL placeholder values
+            if (typeof value === 'string' && value.trim()) {
+              value = this.cleanLiquidSyntax(value);
+            }
+            
             result = result.replace(new RegExp(`\\{${i}\\}`, 'g'), value);
           }
           
@@ -183,7 +189,13 @@ class PatternMatcher {
       }
     }
     
-    return content;
+    // FINAL FALLBACK: If no specific transformation matches, apply universal cleanup
+    // This ensures that any unmatched content still gets its liquid syntax cleaned up
+    const cleanedContent = this.cleanLiquidSyntax(content);
+    
+    // If the content was actually transformed by cleanLiquidSyntax, return it
+    // Otherwise, return the original content to avoid unnecessary processing
+    return cleanedContent !== content ? cleanedContent : content;
   }
 
   fillTemplate(template, match, pattern) {
@@ -196,10 +208,10 @@ class PatternMatcher {
         // UNIVERSAL CLEANUP: Apply comprehensive liquid syntax cleanup to ALL values
         if (typeof value === 'string') {
           value = this.cleanLiquidSyntax(value);
-          
+        
           // Apply pattern-specific processing after universal cleanup
           if (placeholder === 'condition') {
-            value = this.processConditionalExpression(value);
+          value = this.processConditionalExpression(value);
           }
         }
         
@@ -314,8 +326,8 @@ class PatternMatcher {
     // PHASE 6: Clean up extra whitespace and normalize
     result = result.replace(/\s+/g, ' ').trim();
 
-    return result;
-  }
+          return result;
+        }
 
   transformDotNotationPatterns(content) {
     if (this.displayMode === 'technical') {
@@ -419,10 +431,10 @@ class PatternMatcher {
           return `${objectFriendly.toLowerCase()} ${cleanParts[0].toLowerCase()}`;
         } else {
           return `${objectFriendly.toLowerCase()} → ${cleanParts.join(' → ').toLowerCase()}`;
-        }
       }
+    }
     );
-
+    
     return result;
   }
 

@@ -146,6 +146,16 @@
       "priority": 3
     },
     
+    "shoppingCart": {
+      "regex": "shopping_cart\\s+(.+)",
+      "friendly": "Shopping cart: {cart_data}",
+      "technical": "shopping_cart {cart_data}",
+      "placeholderMap": {
+        "cart_data": 1
+      },
+      "priority": 2
+    },
+    
     "assignment": {
       "regex": "assign\\s+(\\w+)\\s*=\\s*(.+)",
       "friendly": "Set {variable} to {value}",
@@ -1260,6 +1270,8 @@
     "fetch": "\\bfetch\\s+",
     "api": "\\bapi\\s+",
     
+    "shoppingCart": "\\bshopping_cart\\b",
+    
     "abortMessage": "\\babort_message\\b",
     "promotion": "\\bpromotion\\b",
     
@@ -1325,6 +1337,10 @@
       {
         "regex": "^catalog_items\\s+(\\w+)\\s+(.+)$",
         "template": "Fetch {1}: {2}"
+      },
+      {
+        "regex": "^shopping_cart\\s+(.+)$",
+        "template": "Shopping cart: {1}"
       }
     ],
     "technical": [
@@ -1352,6 +1368,10 @@
       {
         "regex": "^catalog_items\\s+(\\w+)\\s+(.+)$",
         "template": "catalog_items {1} {2}"
+      },
+      {
+        "regex": "^shopping_cart\\s+(.+)$",
+        "template": "shopping_cart {1}"
       }
     ]
   },
